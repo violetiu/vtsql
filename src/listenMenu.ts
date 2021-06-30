@@ -1,6 +1,6 @@
 import { ipcRenderer } from "electron"
 import { showInterface } from "./interfacelayer";
-import { activeTab, closeTab, getActiveTab, getActiveView, selectedObj } from "./protal";
+import { activeTab, closeTab, getActiveTab, getActiveView, open_tabs, selectedObj } from "./protal";
 
 export default ()=>{
     ipcRenderer.on("clickMenuItem",(event:any,menuItemId:string)=>{
@@ -43,7 +43,8 @@ export default ()=>{
             var tab=getActiveTab();
             if(tab!=undefined)
                 closeTab(tab);
-            if(activeTab==undefined|| activeTab.length==0){
+                console.log(open_tabs);
+            if(open_tabs==undefined|| open_tabs.length==0){
                 ipcRenderer.send("window_close");
             }
 

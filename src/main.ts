@@ -4,6 +4,7 @@ import { recent, saveRecent } from "./config";
 import { onIpcMain } from "./ipcmain";
 import buildMenu from "./buildMenu";
 import { OnBeforeRequestListenerDetails } from "electron/main";
+const isMac = process.platform === 'darwin';
 function createWindow() {
   // Create the browser window.
   const mainWindow = new BrowserWindow({
@@ -14,12 +15,14 @@ function createWindow() {
       navigateOnDragDrop: true,
       webSecurity: true
     },
+    frame:isMac?true:false,
     titleBarStyle: "hidden",
     width: 1247,
   });
   mainWindow.webContents.findInPage
   mainWindow.webContents.addListener("new-window", (event, url) => {
     event.preventDefault();
+    
     if (url.startsWith("file")) {
       if (url.endsWith("sql")) {
         mainWindow.webContents.send("open_sql_file", url);
@@ -37,7 +40,7 @@ function createWindow() {
   mainWindow.loadFile(path.join(__dirname, "../index.html"));
 
   // Open the DevTools.
-  //mainWindow.webContents.openDevTools();
+  mainWindow.webContents.openDevTools();
   //
   onIpcMain(mainWindow);
 

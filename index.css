@@ -5,6 +5,7 @@ body {
     width: 100%;
     height: 100%;
     font-family: system-ui;
+    --status-color:rgb(102, 76, 140);
 }
 
 .app {
@@ -16,7 +17,7 @@ body {
 .sidebar {
     width: 200px;
     user-select: none;
-    -webkit-app-region: drag;
+    -webkit-app-region:drag;
     display: none;
     animation: active 0.5s;
     backdrop-filter: blur(10px);
@@ -76,6 +77,7 @@ space {
     display: flex;
     border-right: 5px solid transparent;
     transition: background-color 0.3s;
+    -webkit-app-region:none;
 }
 
 .tab-context:hover {
@@ -142,16 +144,18 @@ find {
 .titlebar-button {
     padding: 5px 10px 0px 10px;
     cursor: pointer;
+    -webkit-app-region:none;
     display: none;
+    opacity: 0.8;
 }
 
 .titlebar-button svg {
-    color: #eee;
+    color: #fff;
     cursor: pointer;
 }
 
-.titlebar-button:hover svg {
-    color: #fff;
+.titlebar-button:hover {
+  opacity: 1;
 }
 
 .database {
@@ -167,7 +171,8 @@ find {
     display: flex;
     overflow: hidden;
     animation: ani_width 1s;
-    animation-timing-function: cubic-bezier(0.6, -0.28, 0.735, 0.045)
+    animation-timing-function: cubic-bezier(0.6, -0.28, 0.735, 0.045);
+    -webkit-app-region:none;
 }
 
 .database-name {
@@ -199,7 +204,7 @@ find {
 
 .views {
     width: 100%;
-    overflow: scroll;
+    overflow: hidden;
 }
 
 .editor {
@@ -211,6 +216,9 @@ find {
     display: none;
     transition: display 0.5s;
     position: relative;
+    overflow: auto;
+    width: inherit;
+    height: inherit;
 }
 
 .view>table {
@@ -333,7 +341,7 @@ hr {
     width: 100%;
     height: 24px;
     display: flex;
-    background-color: rgb(102, 76, 140);
+    background-color: var(--status-color);
     color: #fff;
 }
 
@@ -612,4 +620,57 @@ iframe {
 
 #statusbar-info {
     min-width: 20px;
+}
+#window-button{
+    padding-right: 5px;
+    display: none;
+    -webkit-app-region:none;
+}
+.window-button{
+    padding: 5px 5px 0px 5px;
+    color: #fff;
+    opacity: 0.8;
+    cursor: pointer;
+    border-radius: 5px;
+}
+.window-button:hover{
+    opacity: 1;
+}
+
+
+
+
+/* 设置滚动条的样式 */
+::-webkit-scrollbar {
+    /* width: 12px; */
+    width: 10px;
+    height: 10px;
+    background: transparent;
+ 
+
+}
+
+/* 滚动槽 */
+::-webkit-scrollbar-track {
+    background: transparent;
+    
+}
+/* 滚动条滑块 */
+::-webkit-scrollbar-thumb {
+ 
+    background: rgba(175, 175, 175, 0.1);
+    backdrop-filter: blur(10px);
+    border-radius: 10px;
+   
+}
+::-webkit-scrollbar-thumb:hover{
+    background: rgba(175, 175, 175, 0.3);
+ 
+}
+::-webkit-scrollbar-corner{
+    background: transparent;
+}
+a{
+    text-decoration: none;
+    color: inherit;
 }

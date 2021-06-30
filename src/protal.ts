@@ -9,7 +9,7 @@ import { ipcRenderer } from "electron";
 import { layoutToolButton } from "./titlebarbuttons/titlebarButtonManager";
 import { onDrapActionElement } from "./drapaction/darpActionManager";
 import { statusInfo } from "./statusbar";
-const isMac = process.platform === 'darwin'
+const isMac = process.platform === 'darwin';
 export var basebase_active: string;
 export type noArgCallback = () => void;
 export var selectedMap: Map<string, string[]>;
@@ -95,9 +95,10 @@ export function addMessageView(key: string, color: string, title: string, messag
     view_div.className = "view";
 
     views_div.appendChild(view_div);
-    view_div.style.padding = "50px";
+  
 
     var title_div = document.createElement("h1");
+    title_div.style.paddingLeft="20px";
     title_div.innerHTML = title;
     view_div.appendChild(title_div);
 
@@ -107,6 +108,7 @@ export function addMessageView(key: string, color: string, title: string, messag
     message = message.replace(/\)/g, "</highlight>)");
     var message_div = document.createElement("p");
     message_div.innerHTML = message;
+    message_div.style.paddingLeft="20px";
     message_div.className = "message";
     view_div.appendChild(message_div);
 
@@ -123,7 +125,7 @@ export function addWecomeView(key: string, color: string) {
     view_div.className = "view";
 
     views_div.appendChild(view_div);
-    view_div.style.padding = "50px";
+  
 
     view_div.appendChild(welcome(color));
     activeView(key);
@@ -782,14 +784,15 @@ export function addEditorView(database: string, table: string, sql: string[], ke
     });
     view_div.setAttribute("data-sql", sqlAttr);
     view_div.className = "view";
-
+    view_div.style.overflow="hidden";
+  
     views_div.appendChild(view_div);
     //loadedit
     var editor = document.createElement("div");
     editor.className = "editor_container";
     editor.id = key;
-    editor.style.width = "100%";
-    editor.style.height = (window.innerHeight - 50 - 24) + "px";
+    editor.style.width =(views_div.clientWidth)+"px";
+    editor.style.height = (views_div.clientHeight) + "px";
     view_div.appendChild(editor);
     // createEdior(editor);
 
@@ -887,10 +890,11 @@ export function addResultView(key: string, sql: string, database: string) {
                 renderTab(tab_active);
 
             }
-            view_div.style.padding = "50px";
+         
 
             var title_div = document.createElement("h1");
             title_div.innerHTML = error.message;
+            title_div.style.paddingLeft="20px";
             view_div.appendChild(title_div);
             var message = error.stack;
             message = message.replace(/at /g, "<br/>at ");
@@ -898,6 +902,7 @@ export function addResultView(key: string, sql: string, database: string) {
             message = message.replace(/\(/g, "(<highlight>");
             message = message.replace(/\)/g, "</highlight>)");
             var message_div = document.createElement("p");
+            message_div.style.paddingLeft="20px";
             message_div.innerHTML = message;
             message_div.className = "message";
             view_div.appendChild(message_div);

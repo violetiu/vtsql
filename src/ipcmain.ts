@@ -1,15 +1,25 @@
-import { BrowserWindow, ipcMain, Menu } from "electron";
+import { app, BrowserWindow, ipcMain, Menu } from "electron";
 import { recent, saveRecent } from "./config";
-
+var isMax=false;
 export function onIpcMain(mainWindow: BrowserWindow) {
 
   ipcMain.on("window_max", () => {
 
+    if(isMax)
     mainWindow.maximize();
+    else
+    mainWindow.unmaximize();
+    isMax=!isMax;
+
+  });
+  ipcMain.on("window_min", () => {
+
+    mainWindow.minimize();
 
   });
   //
   ipcMain.on("window_close", () => {
+
 
     mainWindow.close();
 

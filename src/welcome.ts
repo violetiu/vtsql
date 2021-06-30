@@ -254,11 +254,9 @@ export default function html(color: string): HTMLElement {
     learn.innerText = "Learn";
     right.appendChild(learn);
     var card = document.createElement("div");
-    card.innerText = "Instructions for use!";
+    card.innerHTML = "<a target='blank' href='https://www.violetime.com/product/vtsql'>Instructions for use!</a>";
     card.className = "card";
     right.appendChild(card);
-
-
 
 
     return root;

@@ -50,9 +50,26 @@ export function loadTitleBarButton() {
     tb_div.onclick=()=>{tb.action()};
 
   });
-
   
   }
+export function loadWindowsTitleButton(){
+  var buttons=document.getElementById("window-button");
+  var min=document.getElementById("window-button-min");
+  var max=document.getElementById("window-button-max");
+  var close=document.getElementById("window-button-close");
+  buttons.style.display="flex";
+
+  close.onclick=()=>{
+    ipcRenderer.send("window_close");
+  }
+  max.onclick=()=>{
+    ipcRenderer.send("window_max");
+  }
+  min.onclick=()=>{
+    ipcRenderer.send("window_min");
+  }
+}
+
 export function layoutToolButton(tab: ITab) {
    var toolButtons_div=document.getElementsByClassName("titlebar-button");
     for(var index=0;index<toolButtons_div.length;index++){

@@ -12,15 +12,20 @@ import * as path from 'path';
 import * as fs from 'fs';
 import listenMenu from './listenMenu';
 import { listenerInterface, showInterface } from './interfacelayer';
-import { loadTitleBarButton } from './titlebarbuttons/titlebarButtonManager';
+import { loadTitleBarButton, loadWindowsTitleButton } from './titlebarbuttons/titlebarButtonManager';
 import { loadDarpActions } from './drapaction/darpActionManager';
-
+const isMac = process.platform === 'darwin';
 
 window.onresize = () => {
   layout();
 };
 window.addEventListener("DOMContentLoaded", () => {
   Theme.load();
+  if(!isMac){
+    loadWindowsTitleButton();
+  }
+
+
   layout();
 
   loadTitleBarButton();
@@ -42,7 +47,13 @@ window.addEventListener("DOMContentLoaded", () => {
 
 function onOpenSQLFile() {
   ipcRenderer.on("open_sql_file", (event, url) => {
-    var path = url.replace("file://", "");
+    var path ="";
+    if(process.platform==="win32"){
+      path=url.replace("file:///", "");
+    }else{
+      path=url.replace("file://", "");
+    }
+   
     let fRead = fs.createReadStream(path);
     let objReadLine = readline.createInterface({
       input: fRead
