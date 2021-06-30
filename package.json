@@ -10,7 +10,7 @@
         "start": "npm run build&&electron ./dist/main.js",
         "package": "electron-packager ./  --platform=darwin --out ./build --icon=Icon.icns"
     },
-    "repository": "https://github.com/electron/electron-quick-start-typescript",
+    "repository": "https://github.com/violetiu/vtsql.git",
     "keywords": [
         "Electron",
         "quick",
@@ -29,17 +29,8 @@
         "typescript": "^4.3.4"
     },
     "dependencies": {
-        "@babel/core": "^7.1.2",
-        "@babel/plugin-proposal-class-properties": "^7.1.0",
-        "@babel/plugin-transform-runtime": "^7.1.0",
-        "@babel/preset-env": "^7.1.0",
-        "@babel/preset-react": "^7.0.0",
-        "@babel/register": "^7.0.0",
-        "@babel/runtime": "^7.1.5",
         "@types/mysql": "^2.15.18",
-        "amd": "0.0.0",
         "electron-packager": "^15.2.0",
-        "esm": "^3.2.25",
         "monaco-editor": "^0.25.2",
         "mysql": "^2.18.1"
     }

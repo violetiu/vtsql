@@ -4,6 +4,7 @@ export  var config:mysql.ConnectionConfig;
 export  var connectMap:Map<string,mysql.Connection>;
 export type testCallback = (message?: string,stack?:any) => void;
 
+export type QueryCallback = (err: mysql.MysqlError,results?: any, fields?: mysql.FieldInfo[],key?:string) => void
 export function testConnect(config0: mysql.ConnectionConfig,cellback:testCallback) {
      const conn= mysql.createConnection(config0);  
        console.log(conn);
@@ -35,12 +36,12 @@ export function getDatabases(config0: mysql.ConnectionConfig, callback: mysql.qu
 export function getTabels(database:string,callback: mysql.queryCallback){
     if (connect == undefined)
     connect = mysql.createConnection(config);
-    connect.query("select table_name as 'table',table_rows as 'row',truncate(data_length/1024/1024, 2) as 'size',truncate(index_length/1024/1024, 2) as 'idnex_size',TABLE_COMMENT  comment from information_schema.tables where table_schema='"+database+"'order by data_length desc, index_length desc;",callback);
+    connect.query("select table_name as 'table',table_rows as 'row',truncate(data_length/1024/1024, 2) as 'size',truncate(index_length/1024/1024, 2) as 'idnex_size',TABLE_COMMENT  comment from information_schema.tables where table_schema='"+database+"'",callback);
 }
 export function getTabelsSuggestions(callback: mysql.queryCallback){
     if (connect == undefined)
     connect = mysql.createConnection(config);
-    connect.query("select table_schema as 'database', table_name as 'table',table_rows as 'row',truncate(data_length/1024/1024, 2) as 'size',truncate(index_length/1024/1024, 2) as 'idnex_size',TABLE_COMMENT  comment from information_schema.tables order by data_length desc, index_length desc;",callback);
+    connect.query("select table_schema as 'database', table_name as 'table',table_rows as 'row',truncate(data_length/1024/1024, 2) as 'size',truncate(index_length/1024/1024, 2) as 'idnex_size',TABLE_COMMENT  comment from information_schema.tables ",callback);
 }
 export function getTablesColumn(database:string,table:string,callback: mysql.queryCallback){
     if (connect == undefined)
@@ -53,14 +54,19 @@ export function getColumnSuggestions(callback: mysql.queryCallback){
     connect = mysql.createConnection(config);
     connect.query("SELECT table_schema as 'database', TABLE_NAME,COLUMN_NAME, COLUMN_COMMENT FROM INFORMATION_SCHEMA.Columns ",callback);
 }
-export function exec(database:string,sql:string,callback: mysql.queryCallback){
 
-    console.log(sql);
+export function exec(key:string,database:string,sql:string,callback: QueryCallback){
+    if(config==undefined){
+        callback({message:"Please connect to the database first！",stack:"We did not find database connection configuration！",code:"0",errno:1,fatal:false,name:"Error"},undefined,undefined,key);
+        return;
+    }
 
     if(database==undefined||database=="undefined"){
         if (connect == undefined)
             connect = mysql.createConnection(config);
-        connect.query(sql,callback);
+        connect.query(sql,(error,result,fields)=>{
+            callback(error,result,fields,key);
+        });
        
     }else{
         if(connectMap==undefined){
@@ -76,7 +82,9 @@ export function exec(database:string,sql:string,callback: mysql.queryCallback){
             });
             connectMap.set(database,conn);
         }
-        conn.query(sql,callback);
+        conn.query(sql,(error,result,fields)=>{
+            callback(error,result,fields,key);
+        });
     }
     
 

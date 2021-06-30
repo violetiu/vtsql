@@ -1,5 +1,10 @@
 import { layout, openWeb, openWelcome, setSidebarVisiable, sidebarVisiable } from "./protal";
 
+export function statusInfo(info:string){
+    var status_info=document.getElementById("statusbar-info");
+    status_info.innerText=info;
+}
+
 export function onStatusbar(){
     var statusbar_home=document.getElementById("statusbar-home");
     statusbar_home.addEventListener("click",()=>{

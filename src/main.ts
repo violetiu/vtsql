@@ -17,7 +17,7 @@ function createWindow() {
     titleBarStyle: "hidden",
     width: 1247,
   });
-  
+  mainWindow.webContents.findInPage
   mainWindow.webContents.addListener("new-window", (event, url) => {
     event.preventDefault();
     if (url.startsWith("file")) {

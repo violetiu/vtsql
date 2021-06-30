@@ -1,4 +1,7 @@
 eval("require.config({ paths: { 'vs': './node_modules/monaco-editor/min/vs' }});");
+
+
+
 var theme = "vs";
 function themeDark(): void {
     theme = "vs-dark";
@@ -61,7 +64,7 @@ document.body.addEventListener("DOMNodeInserted", (e) => {
                 var monaco1 = eval("monaco");
                 var tab_sug = ele.innerText;
 
-                var sqlKeys = ["select", "show","databases","tables","processlist","reset master","from", "insert into", "where", "values()", "columns()", "sum()", "min()", "max()", "len()", "group by", "order by", "limit 0,10", "substr(0,1)", "substring(0,1)", "count(*)"];
+                var sqlKeys = ["exists","if","int","varchar","select", "show", "databases", "tables", "processlist", "reset master", "from", "insert into", "where", "values()", "columns()", "sum()", "min()", "max()", "len()", "group by", "order by", "limit 0,10", "substr(0,1)", "substring(0,1)", "count(*)"];
 
                 monaco1.languages.registerCompletionItemProvider('sql', {
 
@@ -156,6 +159,8 @@ document.body.addEventListener("DOMNodeInserted", (e) => {
         eval("require(['vs/editor/editor.main'],fun);")
     }
 });
+
+
 var views_div = document.getElementById("views");
 views_div.addEventListener("DOMNodeInserted", (e) => {
     var ele: any = e.target;
@@ -167,30 +172,48 @@ views_div.addEventListener("DOMNodeInserted", (e) => {
         var database = view.getAttribute("data-database");
         var table = view.getAttribute("data-table");
         var sqls = view.getAttribute("data-sql");
-        var sql:string[]=[];
-        if(sqls!="undefined"&&sqls.length>5){
+        var sql: string[] = [];
+        if (sqls != "undefined" && sqls.length > 5) {
             sqls.split("[n]").forEach((line: any) => {
-                if(line.trim().length>0){
+                if (line.trim().length > 0) {
                     sql.push(line);
                 }
             });
 
-        }else{
+        } else {
             if (table != "undefined") {
                 sql.push("select * from " + table + "  limit 0,100;");
             } else {
                 sql.push("");
             }
-    
+
         }
         var fun = function () {
             setTimeout(() => {
                 var monaco1 = eval("monaco");
                 var editor = monaco1.editor.create(ele, {
-                    value:sql.join('\n'),
+                    value: sql.join('\n'),
                     language: 'sql',
                     theme: theme
                 });
+
+                const myAction = {
+                    id: "formatsql",
+                    label: "Format SQL",
+                    // keybindings: [
+                    // // eslint-disable-next-line no-bitwise
+                    // KeyMod.CtrlCmd | KeyCode.Enter, // Ctrl + Enter or Cmd + Enter
+                    // // eslint-disable-next-line no-bitwise
+                    // KeyMod.CtrlCmd | KeyCode.KEY_R, // Ctrl + R or Cmd + R
+                    // ],
+                    run: () => {
+                        console.log("sadasda");
+                        editor.setValue(eval("vkbeautify").sql(editor.getValue()));
+                    },
+                }
+                editor.addAction(myAction);
+
+
             }, 1);
         }
         eval("require(['vs/editor/editor.main'],fun);")

@@ -1,20 +1,34 @@
 export const Theme = {
+    background:"",
+    color:"",
+    hover:"",
+    bar:"",
+
     randomColor(): string {
         var index = Math.floor(Math.random() * Theme.colors.length);
         return Theme.colors[index];
     },
-    themeHoverColor : "#fff",
     themeDark():void {
-        document.body.style.backgroundColor = "rgb(30,30,30)";
-        document.body.style.color = "rgba(255,255,255,0.7)";
-        document.getElementById("sidebar").style.backgroundColor = "#444";
+        Theme.background="rgb(30,30,30)";
+        Theme.color="rgba(255,255,255,0.7)";
+        Theme.hover="rgba(175,175,175,0.2)";
+        Theme.bar="#444";
 
+     
     },
     themeLight() :void{
-        document.body.style.backgroundColor = "#fff";
-        document.body.style.color = "#444";
-        document.getElementById("sidebar").style.backgroundColor = "#f3f3f3";
+        Theme.background="#fff";
+        Theme.color="#444";
+        Theme.hover="rgba(175,175,175,0.2)";
+        Theme.bar="#f3f3f3";
 
+
+
+    },
+    action():void{
+        document.body.style.backgroundColor = Theme.background;
+        document.body.style.color =Theme.color;
+        document.getElementById("sidebar").style.backgroundColor = Theme.bar;
     },
     load() :void{
         /*判断是否支持主题色*/
@@ -32,7 +46,7 @@ export const Theme = {
         if (window.matchMedia('(prefers-color-scheme: light)').matches) {
             Theme.themeLight();
         }
-
+        Theme.action();
 
         /*模式切换听器*/
         var listeners = {
@@ -40,16 +54,17 @@ export const Theme = {
                 if (mediaQueryList.matches) {
                     //Do some thing
                     Theme.themeDark();
+                    Theme.action();
                 }
             },
             light: function (mediaQueryList: any) {
                 if (mediaQueryList.matches) {
                     //Do some thing
                     Theme.themeLight();
+                    Theme.action();
                 }
             }
         }
-
         window.matchMedia('(prefers-color-scheme: dark)').addEventListener("change", listeners.dark);
         window.matchMedia('(prefers-color-scheme: light)').addEventListener("change", listeners.light);
 

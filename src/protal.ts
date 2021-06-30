@@ -6,7 +6,10 @@ export var open_tabs: Array<ITab> = [];
 export var sidebarVisiable: boolean = false;
 import * as mysql from 'mysql';
 import { ipcRenderer } from "electron";
-
+import { layoutToolButton } from "./titlebarbuttons/titlebarButtonManager";
+import { onDrapActionElement } from "./drapaction/darpActionManager";
+import { statusInfo } from "./statusbar";
+const isMac = process.platform === 'darwin'
 export var basebase_active: string;
 export type noArgCallback = () => void;
 export var selectedMap: Map<string, string[]>;
@@ -17,11 +20,14 @@ export function selectedObj(objs: string[]) {
             selectedMap = new Map();
         }
         selectedMap.set(tab.key, objs);
-
+        layoutToolButton(tab);
     }
+    var statusbar_selected = document.getElementById("statusbar-selected");
     if (objs != undefined && objs.length > 0) {
-        var statusbar_selected = document.getElementById("statusbar-selected");
+      
         statusbar_selected.innerText = objs.length + " " + objs[0];
+    }else{
+        statusbar_selected.innerText = "";
     }
 
 }
@@ -49,8 +55,10 @@ export function activeBasebase(database: string) {
     var statusbar_database = document.getElementById("statusbar-database");
     statusbar_database.innerText = database;
     basebase_active = database;
+  
 
 }
+
 export function openWeb(url: string): void {
 
     var color = Theme.randomColor();
@@ -93,13 +101,13 @@ export function addMessageView(key: string, color: string, title: string, messag
     title_div.innerHTML = title;
     view_div.appendChild(title_div);
 
-    message=message.replace(/at /g,"<br/>at ");
-    message=message.replace(/--------------------/g,"<br/>--------------------");
-    message=message.replace(/\(/g,"(<highlight>");
-    message=message.replace(/\)/g,"</highlight>)");
+    message = message.replace(/at /g, "<br/>at ");
+    message = message.replace(/--------------------/g, "<br/>--------------------");
+    message = message.replace(/\(/g, "(<highlight>");
+    message = message.replace(/\)/g, "</highlight>)");
     var message_div = document.createElement("p");
     message_div.innerHTML = message;
-    message_div.className="message";
+    message_div.className = "message";
     view_div.appendChild(message_div);
 
 
@@ -164,7 +172,7 @@ export function loadDatabases(config: mysql.ConnectionConfig) {
 
     var load_svg = document.createElement("div");
     load_svg.className = "loadding";
-    databases_div.innerHTML="";
+    databases_div.innerHTML = "";
     databases_div.appendChild(load_svg);
     if (!sidebarVisiable) {
         sidebarVisiable = true;
@@ -177,20 +185,20 @@ export function loadDatabases(config: mysql.ConnectionConfig) {
     var statusbar_connect = document.getElementById("statusbar-connect");
     statusbar_connect.innerText = config.host;
 
-   
+
     var databaseMap: Map<string, number> = new Map();
     showDatabases(config, (error1, result1, fields1) => {
-        if (error1){
-            openMessage(error1.message,error1.stack,"darkred");
+        if (error1) {
+            openMessage(error1.message, error1.stack, "darkred");
             return;
         };
         result1.forEach((row: any, index: number) => {
-           
+
             databaseMap.set(row.Database, 0);
         });
         getDatabases(config, (error, result, fields) => {
             if (error) {
-                openMessage(error.message,error.stack,"darkred");
+                openMessage(error.message, error.stack, "darkred");
                 return;
             }
             databases_div.innerHTML = "";
@@ -213,7 +221,9 @@ export function loadDatabases(config: mysql.ConnectionConfig) {
                     database_name_div.innerText = database;
                     var database_info_div = document.createElement("div");
                     database_info_div.className = "database-info";
-                    database_info_div.innerText = size + "Mb";
+                    database_info_div.innerHTML = size + "<span style='font-size:6px;'>Mb</span>";
+                    database_info_div.style.background=Theme.bar;
+                    database_info_div.style.color=color;
                     database_div.appendChild(database_name_div); database_div.appendChild(database_info_div);
                     databases_div.appendChild(database_div);
                     database_div.onclick = () => { openDatabase(database, color) };
@@ -240,7 +250,7 @@ export function openDatabase(database: string, color: string): void {
     var key = database;
     addTab({ key: key, active: true, color: color, title: database, type: "tables", database: database });
     renderTabs();
-    addTablesView(database, key);
+    addTablesView(database, key,true);
 
 }
 
@@ -289,7 +299,7 @@ export function renderTabs() {
                 }
                 themeColor(tab.color);
                 activeView(tab.key);
-                toolButton(tab);
+                layoutToolButton(tab);
             }
             else {
                 tab_div.className = "tab";
@@ -312,8 +322,9 @@ export function renderTab(tab: ITab) {
         var tab_div = children[i];
         var tabKey = tab_div.getAttribute("data-key");
         if (tabKey == tab.key) {
-            var tabContext: any = tab_div.children.item(0);
-            tabContext.innerText = tab.title;
+            var tabtitle = tab_div.getElementsByClassName("tab-title").item(0);
+
+            tabtitle.textContent = tab.title;
             themeColor(tab.color);
             break;
         }
@@ -328,50 +339,9 @@ export function themeColor(color: string) {
     // statusbar.style.backgroundColor = color;
 
 }
-export function toolButton(tab: ITab) {
-    var viewdata = document.getElementById("view-data");
-    if (tab.type == "columns") {
-        viewdata.style.display = "block"
-    } else {
-        viewdata.style.display = "none";
-    }
 
-    var runeditor = document.getElementById("run-editor");
-    if (tab.type == "editor") {
-        runeditor.style.display = "block"
-    } else {
-        runeditor.style.display = "none";
-    }
-
-    var neweditor = document.getElementById("new-editor");
-    if (tab.type != "welcome" && tab.type != "message" && tab.type != "result") {
-        neweditor.style.display = "block"
-    } else {
-        neweditor.style.display = "none";
-    }
-
-
-    var newAuto = document.getElementById("new-auto");
-    if (tab.type != "welcome" && tab.type != "message" && tab.type != "result" && tab.type != "editor") {
-        newAuto.style.display = "block"
-    } else {
-        newAuto.style.display = "none";
-    }
-
-    var newDel = document.getElementById("delete-auto");
-    if (tab.type == "tables" || tab.type == "columns" || tab.type == "result") {
-        newDel.style.display = "block"
-    } else {
-        newDel.style.display = "none";
-    }
-
-
-
-
-
-}
 export function activeTab(tab: ITab) {
-    toolButton(tab);
+    layoutToolButton(tab);
     if (tab.database != undefined) {
         activeBasebase(tab.database);
     }
@@ -451,15 +421,28 @@ export function activeView(key: string) {
             child.className = "view";
         }
     }
+    selectedObj(undefined);
 
 }
 export function layout() {
+    var titlebarStart = document.getElementById("titlebar-start");
+    var titlebarEnd = document.getElementById("titlebar-end");
 
     var sidebarWidth = 200;
     if (sidebarVisiable) {
         sidebarWidth = 200;
+        titlebarStart.style.paddingLeft="0px";
+        titlebarEnd.style.paddingRight="0px";
     } else {
         sidebarWidth = 0;
+        if (isMac) {
+            titlebarStart.style.paddingLeft="60px";
+            titlebarEnd.style.paddingRight="0px";
+        } else {
+            titlebarStart.style.paddingLeft="0px";
+            titlebarEnd.style.paddingRight="60px";
+        }
+
     }
     var views_div = document.getElementById("views");
     views_div.style.height = (window.innerHeight - 50 - 24) + "px";
@@ -469,7 +452,7 @@ export function layout() {
 
 }
 
-export function addTablesView(database: string, key: string) {
+export function addTablesView(database: string, key: string,isGrid?:boolean) {
 
     var views_div = checkView(key);
 
@@ -481,45 +464,124 @@ export function addTablesView(database: string, key: string) {
 
     views_div.appendChild(view_div);
 
-    var table_div = document.createElement("table");
-    table_div.className = "view_table_list";
-    view_div.appendChild(table_div);
+    if(isGrid){
+        var grids_div = document.createElement("table");
+        grids_div.className = "view_grids";
+        view_div.appendChild(grids_div);
 
-    var thead_div = document.createElement("thead");
-    table_div.appendChild(thead_div);
-    var th = document.createElement("th");
-    th.innerText = "";
-    th.className = "th-tow";
-    thead_div.appendChild(th);
-    ["Table", "Rows", "Size", "Index_size", "Comment"].forEach(item => {
-        var th = document.createElement("th");
-        th.innerText = item;
-        thead_div.appendChild(th);
-    })
+        getTabels(database, (error, result, fields) => {
+            //分组
+            statusInfo(result.length);
+            var groupData:Map<string,any>=new Map();
+            result.forEach((row: any, index: number) => {
+                var table:string= row.table;
+                var key=table;
+                if(table.indexOf("_")>0){
+                    key=table.split("_")[0];
+                }
+                var data=groupData.get(key);
+                if(data==undefined){
+                    data=[];
+                    groupData.set(key,data);
+                }
+                data.push(row);
 
-    var tbody_div = document.createElement("tbody");
-    table_div.appendChild(tbody_div);
 
-    getTabels(database, (error, result, fields) => {
+            });
+            //绘制
+            groupData.forEach((data,key)=>{
 
-        result.forEach((row: any, index: number) => {
+                var groupColor=Theme.randomColor();
 
-            var table = row.table;
-            var tr = createTrElement(row, index);
-            tr.onclick = () => {
-                selectedObj([table]);
-            };
-            tr.ondblclick = () => {
-                openColumns(database, table);
-            };
-            tr.oncontextmenu = (e) => {
-                e.preventDefault();
-                ipcRenderer.send('show-tables-menu', table);
-            };
+                var grid_div=document.createElement("div");
+                grid_div.className="grid_group";
+     
+                grid_div.style.backgroundColor=Theme.background;
+                grid_div.style.borderBottom="1px solid "+groupColor;
+                grids_div.appendChild(grid_div);
 
-            tbody_div.appendChild(tr);
-        });
-    })
+                var grid_tile_div=document.createElement("div");
+                grid_tile_div.innerText=key;
+                grid_tile_div.style.backgroundColor=groupColor;
+                grid_div.appendChild(grid_tile_div);
+
+                var group_div=document.createElement("div");
+            
+
+                grids_div.appendChild(group_div);
+
+
+                
+                data.forEach((row: any, index: number) => {
+                    var grid_div=document.createElement("div");
+                    grid_div.className="grid";
+                    var table = row.table;
+                    var grid_title=document.createElement("div");
+                    grid_title.className="grid_title";
+                    grid_title.innerText=table;
+                    var grid_info=document.createElement("div");
+                    grid_info.className="grid_info";
+                    grid_info.innerText=row.comment;
+                    grid_div.appendChild(grid_title);
+                    grid_div.appendChild(grid_info);
+    
+                    group_div.appendChild(grid_div);
+                   
+                    onDrapActionElement(grid_div,row);
+                 
+                    grid_div.onclick = () => {
+                        selectedObj([table]);
+                    };
+                    grid_div.ondblclick = () => {
+                        openColumns(database, table);
+                    };
+                    grid_div.oncontextmenu = (e) => {
+                        e.preventDefault();
+                        ipcRenderer.send('show-tables-menu', table);
+                    };
+        
+                   
+                });
+            })
+
+           
+        })
+
+
+
+
+    }else{
+
+        var table_div = document.createElement("table");
+        table_div.className = "view_table_list";
+        view_div.appendChild(table_div);
+        createTheadElement(table_div, ["Table", "Rows", "Size", "Index_size", "Comment"]);
+       
+        var tbody_div = document.createElement("tbody");
+        table_div.appendChild(tbody_div);
+    
+        getTabels(database, (error, result, fields) => {
+    
+            result.forEach((row: any, index: number) => {
+    
+                var table = row.table;
+                var tr = createTrElement(row, index+1);
+                tr.onclick = () => {
+                    selectedObj([table]);
+                };
+                tr.ondblclick = () => {
+                    openColumns(database, table);
+                };
+                tr.oncontextmenu = (e) => {
+                    e.preventDefault();
+                    ipcRenderer.send('show-tables-menu', table);
+                };
+    
+                tbody_div.appendChild(tr);
+            });
+        })
+    
+    }
 
 
     activeView(key);
@@ -545,31 +607,20 @@ export function addTableInfoView(database: string, table: string, key: string) {
     var table_div = document.createElement("table");
     table_div.className = "view_table_list";
     view_div.appendChild(table_div);
-
-    var thead_div = document.createElement("thead");
-    table_div.appendChild(thead_div);
-    var th = document.createElement("th");
-    th.innerText = "";
-    th.className = "th-tow";
-    thead_div.appendChild(th);
-    //TABLE_CATALOG | TABLE_SCHEMA | TABLE_NAME   | COLUMN_NAME | ORDINAL_POSITION | COLUMN_DEFAULT | IS_NULLABLE | DATA_TYPE | CHARACTER_MAXIMUM_LENGTH | CHARACTER_OCTET_LENGTH | NUMERIC_PRECISION | NUMERIC_SCALE | DATETIME_PRECISION | CHARACTER_SET_NAME | COLLATION_NAME  | COLUMN_TYPE | COLUMN_KEY | EXTRA | PRIVILEGES                      | COLUMN_COMMENT  | GENERATION_EXPRESSION | SRS_ID |
-    ["Column_Name", "Column_Type", "Column_Default", "Character_Maximum_Length", "Column_Key", "Column_Comment"].forEach(item => {
-        var th = document.createElement("th");
-        th.innerText = item;
-        thead_div.appendChild(th);
-    })
-
+    createTheadElement(table_div,["Column_Name", "Column_Type", "Column_Default", "Character_Maximum_Length", "Column_Key", "Column_Comment"]);
+  
     var tbody_div = document.createElement("tbody");
     table_div.appendChild(tbody_div);
 
     getTablesColumn(database, table, (error, result, fields) => {
-
+        statusInfo(result.length);
         result.forEach((row: any, index: number) => {
 
             var column = row.COLUMN_NAME;
-            var tr = createTrElement(row, index);
+            var type=row.COLUMN_TYPE;
+            var tr = createTrElement(row, index+1);
             tr.onclick = () => {
-                selectedObj([column]);
+                selectedObj([column,type]);
             }
 
             tbody_div.appendChild(tr);
@@ -580,11 +631,36 @@ export function addTableInfoView(database: string, table: string, key: string) {
     activeView(key);
 
 }
+export function createTheadElement(table_div:HTMLElement,columns:Array<string>){
+    var color=Theme.randomColor();
+    var thead_div = document.createElement("thead");
+    table_div.appendChild(thead_div);
+    var th = document.createElement("th");
+    th.innerText = "";
+    th.className = "th-tow";
+  
+    th.style.backgroundColor=Theme.background;
+    thead_div.appendChild(th);
+    columns.forEach(item => {
+        var color=Theme.randomColor();
+        var th = document.createElement("th");
+        th.innerText = item;
+        th.style.color=color;
+        th.style.borderBottom="1px solid "+color;
+        th.style.backgroundColor=Theme.background;
+        thead_div.appendChild(th);
+    })
+}
 export function createTrElement(data: any, index: number): HTMLElement {
     var tr = document.createElement("tr");
+
+    var color=Theme.randomColor();
     var td = document.createElement("td");
     td.innerText = index + "";
     td.className = "td-tow";
+    td.style.borderRight="1px solid "+color;
+    td.style.color=color;
+    td.style.backgroundColor=Theme.background;
     tr.appendChild(td);
 
     for (var key in data) {
@@ -594,6 +670,7 @@ export function createTrElement(data: any, index: number): HTMLElement {
 
         tr.appendChild(td);
     }
+    onDrapActionElement(tr,data);
 
     return tr;
 }
@@ -652,8 +729,21 @@ export function getActiveTab(): ITab {
     }
     return tab_active;
 }
+export function getActiveView(tab: ITab): Element {
+    var views_div = document.getElementById("views");
+    var children = views_div.children;
+
+    for (var i = 0; i < children.length; i++) {
+        var child = children.item(i);
+        var key0 = child.getAttribute("data-key");
+        if (key0 == tab.key) {
+            return child;
+        }
+    }
+    return undefined;
+}
 export var editor_count: number = 0;
-export function newEditor(key:string,title:string,sql: string[]) {
+export function newEditor(key: string, title: string, sql: string[]) {
     if (open_tabs != undefined && open_tabs.length > 0) {
         var tab_active: ITab = null;
         open_tabs.forEach((tab => {
@@ -702,41 +792,52 @@ export function addEditorView(database: string, table: string, sql: string[], ke
     editor.style.height = (window.innerHeight - 50 - 24) + "px";
     view_div.appendChild(editor);
     // createEdior(editor);
-   
+
     activeView(key);
 
 }
 
 export function openViewData(): void {
-                var tab_active=getActiveTab();
-        if (tab_active != undefined && tab_active != null) {
-            if (tab_active.type == "columns") {
-                var sql = "select * from " + tab_active.table + " limit 0,100";
-                var key = "View Data:" + tab_active.database + "." + tab_active.table;
-                addTab({ key: key, active: true, color: Theme.randomColor(), title: key, type: "result" });
-                renderTabs();
-                addResultView(key,sql, tab_active.database);
-            }
+    var tab_active = getActiveTab();
+    if (tab_active != undefined && tab_active != null) {
+        if (tab_active.type == "columns") {
+            var sql = "select * from " + tab_active.table + " limit 0,100";
+            var key = "View Data:" + tab_active.database + "." + tab_active.table;
+            addTab({ key: key, active: true, color: Theme.randomColor(), title: key, type: "result" });
+            renderTabs();
+            addResultView(key, sql, tab_active.database);
         }
+    }
 
 
 
 }
 
-
+export function getTitle(longTitle: string) {
+    var title = longTitle;
+    if (title.length > 10) {
+        title = title.substring(0, 10) + "...";
+    }
+    return title;
+}
 export function openSqlResult(sql: string): void {
     var statusbar_database = document.getElementById("statusbar-database");
     var database: string = basebase_active + "";
 
-    var key = sql;
+    var key = "SQL.RESULT-" + (editor_count + 1);
+    editor_count++;
+    var title = getTitle(sql);
     addTab({ key: key, active: true, color: Theme.randomColor(), title: sql, type: "result" });
     renderTabs();
-    addResultView(key,sql, database);
+    setTimeout(() => {
+        addResultView(key, sql, database);
+    }, 10);
+
 
 }
-export function addResultView(key:string,sql: string, database: string) {
+export function addResultView(key: string, sql: string, database: string) {
 
-    var views_div = checkView(sql);
+    var views_div = checkView(key);
 
     var view_div = document.createElement("div");
     view_div.setAttribute("data-key", key);
@@ -761,54 +862,71 @@ export function addResultView(key:string,sql: string, database: string) {
 
     var th = document.createElement("th");
     th.innerText = "";
+    th.style.backgroundColor=Theme.background;
     th.className = "th-tow";
     thead_div.appendChild(th);
-
+    console.log("key", key);
     //loadedit
-    exec(database, sql, (error, result, fields) => {
+    exec(key, database, sql, (error, result, fields, callBackKey) => {
 
         if (error) {
 
-            var tab_active: ITab = null;
+            var tab_active: ITab;
+            console.log("key", callBackKey);
             open_tabs.forEach((tab => {
-                if (tab.active) {
+                console.log(tab.key, callBackKey);
+                if (tab.key == callBackKey) {
                     tab_active = tab;
                 }
 
             }));
+            console.log("tab_active", tab_active);
             if (tab_active != undefined && tab_active != null) {
                 tab_active.color = "darkred";
-                tab_active.title = "Exec Error:" + sql;
+                tab_active.title = "Exec Error:" + getTitle(sql);
                 renderTab(tab_active);
 
             }
+            view_div.style.padding = "50px";
 
-            var error_div = document.createElement("error");
-            error_div.innerText = error.stack;
-            view_div.appendChild(error_div);
+            var title_div = document.createElement("h1");
+            title_div.innerHTML = error.message;
+            view_div.appendChild(title_div);
+            var message = error.stack;
+            message = message.replace(/at /g, "<br/>at ");
+            message = message.replace(/--------------------/g, "<br/>--------------------");
+            message = message.replace(/\(/g, "(<highlight>");
+            message = message.replace(/\)/g, "</highlight>)");
+            var message_div = document.createElement("p");
+            message_div.innerHTML = message;
+            message_div.className = "message";
+            view_div.appendChild(message_div);
+
             return;
         }
-
-        console.log(result);
-        console.log(fields);
         if (fields != undefined)
             fields.forEach((row: any) => {
+                var color=Theme.randomColor();
                 var th = document.createElement("th");
                 th.innerText = row.name;
+                th.style.color=color;
+                th.style.borderBottom="1px solid "+color;
+                th.style.backgroundColor=Theme.background;
                 thead_div.appendChild(th);
             });
         if (result instanceof Array) {
+            statusInfo(result.length+"");
             result.forEach((row: any, index: number) => {
                 var table = row.table;
-                var tr = createTrElement(row, index);
-                tr.onclick=()=>{
-                    var where:string="";
+                var tr = createTrElement(row, index + 1);
+                tr.onclick = () => {
+                    var where: string = "";
                     for (var key in row) {
                         var item = row[key];
-                        where+=" key='"+item+"' and";
+                        where += " key='" + item + "' and";
                     }
-                    if(where.endsWith("and")){
-                        where=where.substring(0,where.length-4);
+                    if (where.endsWith("and")) {
+                        where = where.substring(0, where.length - 4);
                     }
                     selectedObj([where]);
                 }
@@ -840,6 +958,6 @@ export function addResultView(key:string,sql: string, database: string) {
     })
 
     //
-    activeView(sql);
+    activeView(key);
 
 }

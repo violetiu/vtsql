@@ -45,6 +45,17 @@ export default ()=>{
         { role: 'cut' },
         { role: 'copy' },
         { role: 'paste' },
+        { type: 'separator' },
+        {
+          id:"find",
+          label:"Find",
+          accelerator:'CommandOrControl+F',
+          click:(menuItem:MenuItem, browserWindow:BrowserWindow, event:any)=>{
+            browserWindow.webContents.send("clickMenuItem","find");
+          }
+        },
+        { type: 'separator' },
+
         ...(isMac ? [
           { role: 'pasteAndMatchStyle' },
           { role: 'delete' },
@@ -71,14 +82,7 @@ export default ()=>{
         { role: 'reload' },
         { role: 'forceReload' },
         { role: 'toggleDevTools' },
-        {
-          id:"runcommand",
-          label:"Run Command",
-          accelerator:'CommandOrControl+Shift+P',
-          click:(menuItem:MenuItem, browserWindow:BrowserWindow, event:any)=>{
-            browserWindow.webContents.send("clickMenuItem","runcommand");
-          }
-        },
+     
         { type: 'separator' },
         { role: 'resetZoom' },
         { role: 'zoomIn' },

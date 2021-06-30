@@ -1,23 +1,45 @@
 import { ipcRenderer } from "electron"
-import { activeTab, closeTab, getActiveTab } from "./protal";
+import { showInterface } from "./interfacelayer";
+import { activeTab, closeTab, getActiveTab, getActiveView, selectedObj } from "./protal";
 
 export default ()=>{
     ipcRenderer.on("clickMenuItem",(event:any,menuItemId:string)=>{
 
         console.log("clickMenuItem :"+menuItemId);
-        if(menuItemId=="runcommand"){
-            var command=document.getElementById("command");
-            var commandInput:any=document.getElementById("command-input");
-            command.style.display="block";
-            commandInput.value=">";
-            commandInput.focus();
-            commandInput.onblur=()=>{
-                commandInput.value="";
+        if(menuItemId=="find"){
+            var tab=getActiveTab();
+            if(tab!=undefined)
+               {
+                   showInterface("find",(value=>{
+                    var view=getActiveView(tab);
+                   
+                    var tds=view.querySelectorAll("td,.grid_title,.grid_info");
+                    for(var i=0;i<tds.length;i++){
+                        var td:any=tds.item(i);
+                        td.innerHTML=td.innerText.replace(value,"<find>"+value+"</find>");
+                    }
+                    var finds=view.getElementsByTagName("find");
+                    if(finds!=undefined&&finds.length>0){
+                        var find=finds.item(0);
+                        find.scrollIntoView();
+                        var select=[];
+                        for(var index in finds){
+                             var findTmp=finds[index];
+                            if(findTmp.textContent!=undefined&&findTmp.textContent.indexOf(value)>=0){
+                                select.push(findTmp.innerHTML);
+                            }
+                          
+                        }
 
-                command.style.display="none";
-            }
+                        selectedObj(select);
+                    }
 
-        }else  if(menuItemId=="closetab"){
+                   }));
+                
+               }
+
+        }
+       else if(menuItemId=="closetab"){
             var tab=getActiveTab();
             if(tab!=undefined)
                 closeTab(tab);

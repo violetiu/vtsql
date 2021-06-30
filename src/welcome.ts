@@ -2,7 +2,7 @@ import { ipcRenderer } from "electron";
 import { ConnectionConfig } from "mysql";
 import { getTime, saveRecent } from "./config";
 
-import { loadDatabases, newEditor, openDatabase, openMessage } from "./protal";
+import { editor_count, loadDatabases, newEditor, openDatabase, openMessage } from "./protal";
 import { config, getColumnSuggestions, getDatabases, getTabelsSuggestions, testConnect } from "./service";
 import { Theme } from "./theme";
 export var recentConfig:any;
@@ -51,9 +51,10 @@ export default function html(color: string): HTMLElement {
 
     open_div.className = "link";
     open_div.style.color = color;
-    open_div.innerText = "Open SQL File";
+    open_div.innerText = "New Editor";
     open_div.onclick = () => {
-
+        var key="Untitled"+"-"+(editor_count+1);
+        newEditor(key,key,[""]);
 
     };
     starts_div.appendChild(open_div);

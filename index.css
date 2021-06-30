@@ -92,9 +92,14 @@ space {
     white-space: nowrap;
 }
 
+find {
+    background-color: rgba(100, 200, 10, 0.4);
+}
+
 .tab-close {
     display: none;
     height: 30px;
+    min-width: 30px;
     width: 30px;
     overflow: hidden;
     cursor: pointer;
@@ -134,18 +139,18 @@ space {
     align-items: center;
 }
 
-.tool-button {
+.titlebar-button {
     padding: 5px 10px 0px 10px;
     cursor: pointer;
     display: none;
 }
 
-.tool-button svg {
+.titlebar-button svg {
     color: #eee;
     cursor: pointer;
 }
 
-.tool-button:hover svg {
+.titlebar-button:hover svg {
     color: #fff;
 }
 
@@ -155,14 +160,14 @@ space {
     align-items: center;
     height: 32px;
     color: #fff;
-    border-radius: 12px;
+    border-radius: 5px;
     margin-top: 5px;
     margin: 10px 10px 0px 10px;
-    opacity: 0.8;
-    transition: opacity 0.5s;
+    opacity: 0.7;
     display: flex;
     overflow: hidden;
-    animation: active 0.3s;
+    animation: ani_width 1s;
+    animation-timing-function: cubic-bezier(0.6, -0.28, 0.735, 0.045)
 }
 
 .database-name {
@@ -178,10 +183,10 @@ space {
 .database-info {
     display: inline-block;
     font-size: 11px;
-    height: 32px;
-    line-height: 32px;
-    background-color: rgba(0, 0, 0, 0.2);
-    padding: 0px 2px 0px 2px;
+    border-radius: 5px;
+    line-height: 2;
+    padding: 0px 4px 0px 4px;
+    transform: rotate( 10deg);
 }
 
 .database:hover {
@@ -227,18 +232,12 @@ space {
     top: 50px;
 }
 
-.view_table_list tbody {}
-
-.view_table_list th {
-    padding: 0px 10px 0px 10px;
-}
-
 .view_table_list tr {
     line-height: 2;
 }
 
 .view_table_list tr:hover td {
-    background-color: rgba(0, 0, 0, 0.1);
+    background-color: rgba(175, 175, 175, 0.2);
 }
 
 .view_table_list td {
@@ -252,8 +251,6 @@ space {
 }
 
 .th-tow {
-    opacity: 0.6;
-    border-right: 1px solid rgba(175, 175, 175, 0.5);
     text-align: center;
 }
 
@@ -261,25 +258,30 @@ space {
     font-size: 14px;
 }
 
-.view thead {
-    border-bottom: 1px solid rgba(175, 175, 175, 0.5);
-}
+.view thead {}
 
 .view th {
-    opacity: 0.6;
+    position: sticky;
+    top: 0px;
+    z-index: 100;
+    padding: 0px 10px 0px 10px;
+    text-align: left;
+    line-height: 3;
 }
 
 .view td {
     white-space: nowrap;
     max-width: 400px;
     overflow: hidden;
-    opacity: 0.9;
+    z-index: 10;
+    line-height: 2.5;
 }
 
 .td-tow {
-    opacity: 0.6;
-    border-right: 1px solid rgba(175, 175, 175, 0.5);
     text-align: center;
+    position: sticky;
+    left: 0px;
+    z-index: 100;
 }
 
 error {
@@ -315,6 +317,7 @@ hr {
     min-width: 200px;
     padding: 10px;
     cursor: pointer;
+    border-radius: 2px;
 }
 
 .card:hover {
@@ -455,10 +458,19 @@ highlight {
     }
 }
 
+@keyframes ani_width {
+    0% {
+        width: 0;
+    }
+    100% {
+        width: 90%;
+    }
+}
+
 @keyframes active {
     0% {
         opacity: 0;
-        transform: translate(-10%, 0) scale(0.9, 0.9);
+        transform: translate(-10%, 0) scale(0.9, 1);
     }
     100% {
         opacity: 1;
@@ -466,23 +478,15 @@ highlight {
     }
 }
 
-.command {
-    position: fixed;
-    top: 50px;
-    left: 50%;
-    background-color: transparent;
-    box-shadow: 4px 4px 9px #999;
-    display: none;
-}
-
-.command-input {
-    padding: 5px;
-}
-
-.command-input input {
-    width: 300px;
-    padding: 5px 10px 5px 10px;
-    outline: none
+@keyframes command {
+    0% {
+        opacity: 0;
+        transform: translate(-10%, 0);
+    }
+    100% {
+        opacity: 1;
+        transform: translate(0, 0);
+    }
 }
 
 .view[data-web=true] {
@@ -501,4 +505,111 @@ iframe {
     max-width: 200px;
     overflow: hidden;
     white-space: nowrap;
+}
+
+.interface {
+    display: none;
+    position: fixed;
+    top: 60px;
+    right: 60px;
+    padding: 4px;
+    background-color: rgba(175, 175, 175, 1);
+    box-shadow: 4px 4px 9px rgba(175, 175, 175, 0.5);
+}
+
+.interface input {
+    padding: 5px 10px 5px 10px;
+    font-size: 14px;
+}
+
+.interface button {
+    height: 30px;
+}
+
+.darp_layer {
+    position: fixed;
+    background-color: rgba(175, 175, 175, 0.3);
+    backdrop-filter: blur(10px);
+    z-index: 100000;
+    min-width: 200px;
+    min-height: 50px;
+    opacity: 0;
+    display: none;
+    /* animation: command 0.5s; */
+    border-radius: 5px;
+}
+
+.darp_view {
+    width: inherit;
+    height: inherit;
+}
+
+.darp_area {
+    height: 40px;
+    margin-bottom: 5px;
+    margin-top: 5px;
+    width: inherit;
+    display: flex;
+    align-items: center;
+    font-size: 15px;
+    font-weight: bolder;
+}
+
+.darp_area[data-over=true] {
+    background-color: rgba(175, 175, 175, 0.2);
+}
+
+.darp_area svg {
+    padding-left: 20px;
+}
+
+.darp_area div {
+    padding-left: 20px;
+}
+
+.grid {
+    display: inline-block;
+    padding: 5px;
+    margin: 5px;
+    vertical-align: top;
+    border-radius: 2px;
+}
+
+.grid:hover {
+    background-color: rgba(175, 175, 175, 0.2);
+}
+
+.grid_group {
+    position: sticky;
+    top: 0;
+}
+
+.grid_group div {
+    font-weight: bolder;
+    font-size: 12px;
+    color: #fff;
+    width: fit-content;
+    padding: 5px 10px 5px 10px;
+    height: inherit;
+    border-top-left-radius: 2px;
+    border-top-right-radius: 2px;
+}
+
+.grid_title {
+    line-height: 2;
+    text-align: center;
+    font-size: 14px;
+}
+
+.grid_info {
+    text-align: center;
+    font-size: 12px;
+}
+
+#statusbar-selected {
+    min-width: 100px;
+}
+
+#statusbar-info {
+    min-width: 20px;
 }
