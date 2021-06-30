@@ -1,7 +1,14 @@
 # vtsql
 
 **A MYSQL client based on Electron.**
-<<<<<<< HEAD
-=======
+
 ![name-of-you-image](https://source.violetime.com/images/vssql1.png)
->>>>>>> edf0fce248a1ee60e4e0e0dda93128700f9f9149
+
+**vtsql for mac.**
+ "package": "electron-packager ./  --platform=darwin --out ./build --icon=Icon.icns"
+
+**vtsql for windows.**
+ "package": "electron-packager ./  --platform=win32 --out ./build --icon=Icon.ico"
+
+**vtsql for linux.**
+ "package": "electron-packager ./  --platform=linux --out ./build --icon=Icon.ico"
