@@ -1,3 +1,0 @@
-[submodule "monaco-editor-core"]
-	path = monaco-editor-core
-	url = https://github.com.cnpmjs.org/bummoblizard/monaco-editor-core.git
