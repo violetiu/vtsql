@@ -5,7 +5,7 @@ import * as mysql from 'mysql';
 import * as readline from 'readline';
 import { onContextMenuCommand } from './contextmenu';
 import { addResultView, basebase_active, editor_count, getActiveTab, getActiveView, getSelectedObj, layout, loadUsed, newEditor, openDatabase, openSqlResult, openViewData, openWeb, openWelcome } from './protal';
-import { getColumnSuggestions, getDatabases, getTabels, getTabelsSuggestions } from './service';
+import { getColumnSuggestions, getDatabases, getTabels, getTabelsSuggestions, listenConnect } from './sqlservice';
 import { onStatusbar } from './statusbar';
 import { Theme } from './theme';
 import * as path from 'path';
@@ -46,6 +46,8 @@ window.addEventListener("DOMContentLoaded", () => {
   onWeb();
   onOpenSQLFile();
   loadDarpActions();
+
+  listenConnect();
 
 });
 

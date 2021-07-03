@@ -1,4 +1,4 @@
-import { getTablesColumn } from "../service";
+import { getTablesColumn } from "../sqlservice";
 import { addTablesView, newEditor, openMessage } from "../protal";
 import { addTableInfoView } from "../protal";
 import { getActiveTab } from "../protal";

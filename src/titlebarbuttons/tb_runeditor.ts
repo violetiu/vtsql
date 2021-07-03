@@ -1,4 +1,4 @@
-import { exec } from "../service";
+import { exec } from "../sqlservice";
 import { addTablesView, closeTab, editor_count, getActiveView, getTabCount, openLoaddingView, openSqlResult } from "../protal";
 import { addTableInfoView } from "../protal";
 import { getActiveTab } from "../protal";

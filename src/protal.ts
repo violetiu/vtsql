@@ -1,5 +1,5 @@
 import { ITab } from "./ITab";
-import { exec, getColumnSuggestions, getDatabases, getTabels, getTabelsSuggestions, getTablesColumn, showDatabases } from "./service";
+import { exec, getColumnSuggestions, getDatabases, getTabels, getTabelsSuggestions, getTablesColumn, showDatabases } from "./sqlservice";
 import { Theme } from "./theme";
 import welcome from "./welcome";
 export var open_tabs: Array<ITab> = [];

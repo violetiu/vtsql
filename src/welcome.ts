@@ -3,7 +3,7 @@ import { ConnectionConfig } from "mysql";
 import { getTime, saveRecent } from "./config";
 
 import { editor_count, loadDatabases, newEditor, openDatabase, openMessage } from "./protal";
-import { config, getColumnSuggestions, getDatabases, getTabelsSuggestions, testConnect } from "./service";
+import { config, getColumnSuggestions, getDatabases, getTabelsSuggestions, showVersion } from "./sqlservice";
 import { Theme } from "./theme";
 export var recentConfig:any;
 export default function html(color: string): HTMLElement {
@@ -105,18 +105,20 @@ export default function html(color: string): HTMLElement {
                     host: item.host,
                     user: item.user,
                     port:item.port,
-                    password: item.password
+                    password: item.password,
+                  
                 }
-                testConnect(config, (message?: string, stack?: any) => {
-                    if (message) {
+                showVersion(config, (error,result,fields) => {
+                    if (error) {
                         connect_div.style.display="block";
                         load_div.style.display="none";
                         var color = "darkred";
-                        openMessage(message, stack, color);
+                        openMessage(error.message, error.stack, color);
                     } else {
+                       var status_version=document.getElementById("status_version");
+                       status_version.innerText=result[0]["version"];
                         setTimeout(() => {
-                            loadDatabases(config);
-                        
+                            loadDatabases(config);                       
                         }, 1);
                     }});
              
@@ -192,15 +194,17 @@ export default function html(color: string): HTMLElement {
                 var config: ConnectionConfig = {
                     host: host, user: user, password: pwd,port:port
                 }
-                testConnect(config, (message?: string, stack?: any) => {
-                    if (message) {
+                showVersion(config, (error,result,fields) => {
+                    if (error) {
                         connect_div.style.display="block";
                         load_div.style.display="none";
             
                         var color = "darkred";
-                        openMessage(message, stack, color);
+                        openMessage(error.message, error.stack, color);
                     } else {
                         load_div.style.display="none";
+                        var status_version=document.getElementById("starts_version");
+                        status_version.innerText=result[0]["version"];
                         setTimeout(()=>{
                             var isExit=false;
                             recentConfig.recent.forEach((recent:any)=>{
