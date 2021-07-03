@@ -116,7 +116,7 @@ export default function html(color: string): HTMLElement {
                     } else {
                         setTimeout(() => {
                             loadDatabases(config);
-                            loadSuggestions();
+                        
                         }, 1);
                     }});
              
@@ -222,7 +222,7 @@ export default function html(color: string): HTMLElement {
                         },1);
                         
                         loadDatabases(config);
-                        loadSuggestions();
+               
                     }
 
                 });
@@ -261,44 +261,4 @@ export default function html(color: string): HTMLElement {
 
     return root;
 }
-export function loadSuggestions() {
-    setTimeout(() => {
 
-        getColumnSuggestions((error, result, fields) => {
-            if (error) {
-                openMessage(error.message,error.stack,"darkred");
-                return;
-            }
-            var sug: string = "";
-            result.forEach((row: any) => {
-                //TABLE_NAME,COLUMN_NAME, COLUMN_COMMENT       
-                sug +=row.database+"[t]"+row.TABLE_NAME + "[t]" + row.COLUMN_NAME + "[t]" + row.COLUMN_COMMENT + "[n]";
-            });
-            var col_div = document.createElement("div");
-            col_div.id = "data-col-sug";
-            col_div.innerText = sug;
-            col_div.style.display = "none";
-            document.body.appendChild(col_div);
-
-            getTabelsSuggestions((error1, result1, fields1) => {
-                if (error1) {
-                    openMessage(error1.message,error1.stack,"darkred");
-                    return;
-                };
-                var sug1: string = "";
-                result1.forEach((row: any) => {
-
-                    sug1 += row.database + "[t]" + row.table + "[t]" + row.comment + " " + "[n]";
-                });
-                var tab_div = document.createElement("div");
-                tab_div.style.display = "none";
-                tab_div.id = "data-tab-sug";
-                tab_div.innerText = sug1;
-                document.body.appendChild(tab_div);
-            })
-
-
-
-        })
-    }, 10);
-}

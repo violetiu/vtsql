@@ -19,7 +19,7 @@ function createWindow() {
     titleBarStyle: "hidden",
     width: 1247,
   });
-  mainWindow.webContents.findInPage
+
   mainWindow.webContents.addListener("new-window", (event, url) => {
     event.preventDefault();
     
@@ -40,7 +40,7 @@ function createWindow() {
   mainWindow.loadFile(path.join(__dirname, "../index.html"));
 
   // Open the DevTools.
-  mainWindow.webContents.openDevTools();
+ // mainWindow.webContents.openDevTools();
   //
   onIpcMain(mainWindow);
 

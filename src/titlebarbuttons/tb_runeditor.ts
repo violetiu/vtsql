@@ -1,4 +1,5 @@
-import { addTablesView, openSqlResult } from "../protal";
+import { exec } from "../service";
+import { addTablesView, closeTab, editor_count, getActiveView, getTabCount, openLoaddingView, openSqlResult } from "../protal";
 import { addTableInfoView } from "../protal";
 import { getActiveTab } from "../protal";
 import { ITitlebarButton } from "./ITitlebarButton";
@@ -9,17 +10,75 @@ export const tb_runeditor: ITitlebarButton = {
     tabs: ["editor"],
     align: "start",
     action: () => {
-       
-            var selection = window.getSelection();
-            var text = selection.toString();
-            if (text == undefined || text.length == 0) {
-                alert("Please select SQL you want to execute first.");
-                return;
+
+        var selection = window.getSelection();
+        var text = selection.toString();
+        if (text == undefined || text.length == 0) {
+            alert("Please select SQL you want to execute first.");
+            return;
+        }
+        var tab = getActiveTab();
+        var key = "loading-" + getTabCount();
+        var database = tab.database;
+        var table = tab.table;
+        var view: HTMLElement = undefined;
+
+
+        var sqls: Array<string> = [];
+        text.split(";").forEach((sql) => {
+
+            if (sql.trim().length > 1) {
+                sqls.push(sql);
             }
-            text.split(";").forEach((sql) => {
-                if (sql.trim().length > 1)
-                    openSqlResult(sql.trim());
-            })
-       
+        });
+
+        sqls.forEach((sql) => {
+
+
+            exec(key, database, sql, (error: any, result: any, fields: any, callBackKey: any) => {
+
+                if (error) {
+                    if (view == undefined) {
+                        view = openLoaddingView(callBackKey, "Run SQL", tab.database, tab.table);
+                    }
+                    var p = document.createElement("p")
+                    p.innerHTML = error.stack;
+                    view.appendChild(p);
+
+
+
+                } else {
+
+                    if (result instanceof Array) {
+
+
+                        openSqlResult(sql, database, table, result, fields);
+                    } else {
+                        if (view == undefined) {
+                            view = openLoaddingView(callBackKey, "Run SQL", tab.database, tab.table);
+                        }
+                        var success_div = document.createElement("success");
+                        success_div.className = "success";
+                        for (var key in result) {
+                            var item = result[key];
+                            if (item instanceof Function) {
+
+                            } else {
+                                success_div.innerHTML += key + ":" + item + ",";
+                            }
+
+
+                        }
+
+                        view.appendChild(success_div);
+                    }
+
+                }
+
+            });
+
+
+        });
+
     }
 }

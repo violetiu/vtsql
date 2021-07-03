@@ -8,7 +8,7 @@
         "watch": "tsc -w",
         "lint": "eslint -c .eslintrc --ext .ts ./src",
         "start": "npm run build&&electron ./dist/main.js",
-        "package": "electron-packager ./  --platform=win32 --out ./build --icon=Icon.ico"
+        "package": "electron-packager ./  --platform=darwin --out ./build --icon=Icon.icns"
     },
     "repository": "https://github.com/violetiu/vtsql.git",
     "keywords": [

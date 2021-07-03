@@ -46,7 +46,9 @@ export function getTabelsSuggestions(callback: mysql.queryCallback){
 export function getTablesColumn(database:string,table:string,callback: mysql.queryCallback){
     if (connect == undefined)
     connect = mysql.createConnection(config);
-    connect.query("SELECT COLUMN_NAME,COLUMN_TYPE,COLUMN_DEFAULT,CHARACTER_MAXIMUM_LENGTH,COLUMN_KEY, COLUMN_COMMENT FROM INFORMATION_SCHEMA.Columns WHERE table_name='"+table+"' AND table_schema='"+database+"'",callback);
+    var sql="SELECT COLUMN_NAME,COLUMN_TYPE,COLUMN_DEFAULT,CHARACTER_MAXIMUM_LENGTH,COLUMN_KEY, COLUMN_COMMENT FROM INFORMATION_SCHEMA.Columns WHERE table_name='"+table+"' AND table_schema='"+database+"'";
+    console.log(sql);
+        connect.query(sql,callback);
 }
 
 export function getColumnSuggestions(callback: mysql.queryCallback){
@@ -78,10 +80,13 @@ export function exec(key:string,database:string,sql:string,callback: QueryCallba
                 host:config.host,
                 user:config.user,
                 password:config.password,
-                database:database
+                database:database,
+              
             });
             connectMap.set(database,conn);
         }
+     
+        console.log(sql);
         conn.query(sql,(error,result,fields)=>{
             callback(error,result,fields,key);
         });

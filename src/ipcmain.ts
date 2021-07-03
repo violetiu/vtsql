@@ -1,5 +1,5 @@
 import { app, BrowserWindow, ipcMain, Menu } from "electron";
-import { recent, saveRecent } from "./config";
+import { recent, saveRecent, saveUsed, used } from "./config";
 var isMax=false;
 export function onIpcMain(mainWindow: BrowserWindow) {
 
@@ -25,7 +25,13 @@ export function onIpcMain(mainWindow: BrowserWindow) {
 
   });
 
-
+  ipcMain.on("used", () => {
+    used(mainWindow);
+  });
+  //
+  ipcMain.on("save_used", (event, usedData) => {
+    saveUsed(usedData);
+  });
   ipcMain.on("recent", () => {
     recent(mainWindow);
 

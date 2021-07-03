@@ -6,6 +6,7 @@ export interface ITab{
     active:boolean,
     database?:string,
     table?:string,
+    loadding?:boolean
 
 }
-export type ITabType="tables"|"databases"|"columns"|"editor"|"result"|"welcome"|"message"|"web";
+export type ITabType="tables"|"databases"|"columns"|"editor"|"result"|"welcome"|"message"|"web"|"loadding";

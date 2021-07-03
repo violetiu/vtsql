@@ -30,7 +30,11 @@ export const da_autodelete:IDrapActon={
           var where: string = "";
           for (var key in data) {
               var item = data[key];
-              where += " key='" + item + "' and";
+              if(item=="null"){
+                where += " "+key+" is null and";
+              }else{
+                where += " "+key+"='" + item + "' and";
+              }
           }
           if (where.endsWith("and")) {
               where = where.substring(0, where.length - 4);

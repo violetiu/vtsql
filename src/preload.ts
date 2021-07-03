@@ -4,7 +4,7 @@ import { contextBridge, ipcRenderer, Menu } from 'electron';
 import * as mysql from 'mysql';
 import * as readline from 'readline';
 import { onContextMenuCommand } from './contextmenu';
-import { addResultView, basebase_active, editor_count, getActiveTab, getActiveView, getSelectedObj, layout, newEditor, openDatabase, openSqlResult, openViewData, openWeb, openWelcome } from './protal';
+import { addResultView, basebase_active, editor_count, getActiveTab, getActiveView, getSelectedObj, layout, loadUsed, newEditor, openDatabase, openSqlResult, openViewData, openWeb, openWelcome } from './protal';
 import { getColumnSuggestions, getDatabases, getTabels, getTabelsSuggestions } from './service';
 import { onStatusbar } from './statusbar';
 import { Theme } from './theme';
@@ -14,6 +14,7 @@ import listenMenu from './listenMenu';
 import { listenerInterface, showInterface } from './interfacelayer';
 import { loadTitleBarButton, loadWindowsTitleButton } from './titlebarbuttons/titlebarButtonManager';
 import { loadDarpActions } from './drapaction/darpActionManager';
+import {editorServer} from './preload/editorServer';
 const isMac = process.platform === 'darwin';
 
 window.onresize = () => {
@@ -24,7 +25,7 @@ window.addEventListener("DOMContentLoaded", () => {
   if(!isMac){
     loadWindowsTitleButton();
   }
-
+  editorServer.start();
 
   layout();
 
@@ -36,6 +37,9 @@ window.addEventListener("DOMContentLoaded", () => {
   setTimeout(() => {
     openWelcome();
   }, 500);
+  setTimeout(() => {
+    loadUsed();
+  }, 10);
   onContextMenuCommand();
   onStatusbar();
   listenMenu();

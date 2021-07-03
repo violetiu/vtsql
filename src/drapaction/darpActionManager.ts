@@ -4,12 +4,13 @@ import { ITab } from "../ITab";
 import { addTableInfoView, addTablesView, checkView, editor_count, getActiveTab, getActiveView, getSelectedObj, newEditor } from "../protal";
 import { ITitlebarButton } from "../titlebarbuttons/ITitlebarButton";
 import { da_autodelete } from "./da_autodelete";
+import { da_editresult } from "./da_editresult";
 import { da_modifycomment } from "./da_modifycomment";
 import { da_truncate } from "./da_truncate";
 import { IDrapActon } from "./IDrapActon";
 
 const darpActions: IDrapActon[] =
-  [da_autodelete,da_modifycomment,da_truncate];
+  [da_autodelete,da_modifycomment,da_truncate,da_editresult];
 
 export function onDrapActionElement(ele: HTMLElement, data: any) {
   var command_layer = document.getElementById("darp_layer");
@@ -18,12 +19,13 @@ export function onDrapActionElement(ele: HTMLElement, data: any) {
   var startY:number;
   ele.ondragstart = (event) => {
     event.dataTransfer.setData("data", JSON.stringify(data));
+    layoutDarpAction(getActiveTab());
     command_layer.style.display = "block";
     command_layer.style.left=(event.clientX+50)+"px";
     startX=event.clientX;
     startY=event.clientY;
     var y=event.clientY+40;
-   
+
     if(y>window.innerHeight*2/3){
      
       command_layer.style.bottom=(window.innerHeight-event.clientY+40)+"px";
@@ -46,8 +48,7 @@ export function onDrapActionElement(ele: HTMLElement, data: any) {
       opacity=val/10000;
     }
     command_layer.style.opacity=opacity+"";
-   
-    console.log(val);
+
   };
   ele.ondragend = (event) => {
     event.dataTransfer.setData("data", undefined);
@@ -92,5 +93,24 @@ export function loadDarpActions() {
   }
   );
 
+
+}
+
+export function layoutDarpAction(tab: ITab) {
+  var darp_areas_div=document.getElementsByClassName("darp_area");
+   for(var index=0;index<darp_areas_div.length;index++){
+     var tb_div:any=darp_areas_div[index];
+     var tabs=tb_div.getAttribute("data-tabs");
+     if(tabs.indexOf(tab.type)>=0){
+    
+      
+         tb_div.style.display = "flex";
+       
+
+     }else{
+       tb_div.style.display = "none";
+     }
+
+   }
 
 }

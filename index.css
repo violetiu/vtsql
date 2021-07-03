@@ -5,7 +5,7 @@ body {
     width: 100%;
     height: 100%;
     font-family: system-ui;
-    --status-color:rgb(102, 76, 140);
+    --status-color: rgb(102, 76, 140);
 }
 
 .app {
@@ -17,7 +17,7 @@ body {
 .sidebar {
     width: 200px;
     user-select: none;
-    -webkit-app-region:drag;
+    -webkit-app-region: drag;
     display: none;
     animation: active 0.5s;
     backdrop-filter: blur(10px);
@@ -58,6 +58,7 @@ space {
 .tab {
     padding: 5px;
     opacity: 0.7;
+    position: relative;
 }
 
 .tab-context {
@@ -77,7 +78,7 @@ space {
     display: flex;
     border-right: 5px solid transparent;
     transition: background-color 0.3s;
-    -webkit-app-region:none;
+    -webkit-app-region: none;
 }
 
 .tab-context:hover {
@@ -144,7 +145,7 @@ find {
 .titlebar-button {
     padding: 5px 10px 0px 10px;
     cursor: pointer;
-    -webkit-app-region:none;
+    -webkit-app-region: none;
     display: none;
     opacity: 0.8;
 }
@@ -155,7 +156,7 @@ find {
 }
 
 .titlebar-button:hover {
-  opacity: 1;
+    opacity: 1;
 }
 
 .database {
@@ -172,7 +173,7 @@ find {
     overflow: hidden;
     animation: ani_width 1s;
     animation-timing-function: cubic-bezier(0.6, -0.28, 0.735, 0.045);
-    -webkit-app-region:none;
+    -webkit-app-region: none;
 }
 
 .database-name {
@@ -471,7 +472,7 @@ highlight {
         width: 0;
     }
     100% {
-        width: 90%;
+        width: 80%;
     }
 }
 
@@ -621,56 +622,78 @@ iframe {
 #statusbar-info {
     min-width: 20px;
 }
-#window-button{
+
+#window-button {
     padding-right: 5px;
     display: none;
-    -webkit-app-region:none;
+    -webkit-app-region: none;
 }
-.window-button{
+
+.window-button {
     padding: 5px 5px 0px 5px;
     color: #fff;
     opacity: 0.8;
     cursor: pointer;
     border-radius: 5px;
 }
-.window-button:hover{
+
+.window-button:hover {
     opacity: 1;
 }
 
 
-
-
 /* 设置滚动条的样式 */
+
 ::-webkit-scrollbar {
     /* width: 12px; */
     width: 10px;
     height: 10px;
     background: transparent;
- 
-
 }
+
 
 /* 滚动槽 */
+
 ::-webkit-scrollbar-track {
     background: transparent;
-    
 }
+
+
 /* 滚动条滑块 */
+
 ::-webkit-scrollbar-thumb {
- 
     background: rgba(175, 175, 175, 0.1);
     backdrop-filter: blur(10px);
     border-radius: 10px;
-   
 }
-::-webkit-scrollbar-thumb:hover{
+
+::-webkit-scrollbar-thumb:hover {
     background: rgba(175, 175, 175, 0.3);
- 
 }
-::-webkit-scrollbar-corner{
+
+::-webkit-scrollbar-corner {
     background: transparent;
 }
-a{
+
+a {
     text-decoration: none;
     color: inherit;
+}
+
+.tab[data-loadding] .tab-loadding {
+    animation: ani_width 3s;
+    animation-iteration-count: infinite;
+    display: block;
+}
+
+.tab-loadding {
+    display: none;
+    width: 0;
+    height: 2px;
+    background-color: #fff;
+    position: absolute;
+    border-radius: 10px;
+    bottom: 5px;
+    z-index: 0;
+    left: 15px;
 }

@@ -1,5 +1,5 @@
 import { ITab } from "./ITab";
-import { exec, getColumnSuggestions, getDatabases, getTabels, getTablesColumn, showDatabases } from "./service";
+import { exec, getColumnSuggestions, getDatabases, getTabels, getTabelsSuggestions, getTablesColumn, showDatabases } from "./service";
 import { Theme } from "./theme";
 import welcome from "./welcome";
 export var open_tabs: Array<ITab> = [];
@@ -9,6 +9,7 @@ import { ipcRenderer } from "electron";
 import { layoutToolButton } from "./titlebarbuttons/titlebarButtonManager";
 import { onDrapActionElement } from "./drapaction/darpActionManager";
 import { statusInfo } from "./statusbar";
+import { pushEditorAction } from "./preload/editorServer";
 const isMac = process.platform === 'darwin';
 export var basebase_active: string;
 export type noArgCallback = () => void;
@@ -24,9 +25,9 @@ export function selectedObj(objs: string[]) {
     }
     var statusbar_selected = document.getElementById("statusbar-selected");
     if (objs != undefined && objs.length > 0) {
-      
+
         statusbar_selected.innerText = objs.length + " " + objs[0];
-    }else{
+    } else {
         statusbar_selected.innerText = "";
     }
 
@@ -55,7 +56,7 @@ export function activeBasebase(database: string) {
     var statusbar_database = document.getElementById("statusbar-database");
     statusbar_database.innerText = database;
     basebase_active = database;
-  
+
 
 }
 
@@ -95,10 +96,10 @@ export function addMessageView(key: string, color: string, title: string, messag
     view_div.className = "view";
 
     views_div.appendChild(view_div);
-  
+
 
     var title_div = document.createElement("h1");
-    title_div.style.paddingLeft="20px";
+    title_div.style.paddingLeft = "20px";
     title_div.innerHTML = title;
     view_div.appendChild(title_div);
 
@@ -108,7 +109,7 @@ export function addMessageView(key: string, color: string, title: string, messag
     message = message.replace(/\)/g, "</highlight>)");
     var message_div = document.createElement("p");
     message_div.innerHTML = message;
-    message_div.style.paddingLeft="20px";
+    message_div.style.paddingLeft = "20px";
     message_div.className = "message";
     view_div.appendChild(message_div);
 
@@ -125,7 +126,7 @@ export function addWecomeView(key: string, color: string) {
     view_div.className = "view";
 
     views_div.appendChild(view_div);
-  
+
 
     view_div.appendChild(welcome(color));
     activeView(key);
@@ -189,13 +190,16 @@ export function loadDatabases(config: mysql.ConnectionConfig) {
 
 
     var databaseMap: Map<string, number> = new Map();
+    var databaseList: Array<string> = [];
     showDatabases(config, (error1, result1, fields1) => {
         if (error1) {
             openMessage(error1.message, error1.stack, "darkred");
             return;
         };
         result1.forEach((row: any, index: number) => {
-
+            if (databaseList.indexOf(row.Database) < 0) {
+                databaseList.push(row.Database);
+            }
             databaseMap.set(row.Database, 0);
         });
         getDatabases(config, (error, result, fields) => {
@@ -206,12 +210,20 @@ export function loadDatabases(config: mysql.ConnectionConfig) {
             databases_div.innerHTML = "";
             result.forEach((row: any, index: number) => {
                 var database = row.database;
+                if (databaseList.indexOf(database) < 0) {
+                    databaseList.push(database);
+                }
                 var size = row.size;
                 var rows = row.rows;
                 databaseMap.set(database, size);
             });
             var index: number = 0;
-            databaseMap.forEach((size, database) => {
+            databaseList.sort((a, b) => {
+                var aCount = pullUsedDatabase(a);
+                var bCount = pullUsedDatabase(b);
+                return bCount - aCount;
+            });
+            databaseList.forEach((database) => {
                 if (database !== "information_schema" && database !== "performance_schema"
                     && database !== "mysql" && database !== "sys" && database !== "profile") {
                     var color = Theme.colors[index];
@@ -223,12 +235,16 @@ export function loadDatabases(config: mysql.ConnectionConfig) {
                     database_name_div.innerText = database;
                     var database_info_div = document.createElement("div");
                     database_info_div.className = "database-info";
-                    database_info_div.innerHTML = size + "<span style='font-size:6px;'>Mb</span>";
-                    database_info_div.style.background=Theme.bar;
-                    database_info_div.style.color=color;
+
+                    database_info_div.innerHTML = databaseMap.get(database) + "<span style='font-size:6px;'>Mb</span>";
+                    database_info_div.style.background = Theme.bar;
+                    database_info_div.style.color = color;
                     database_div.appendChild(database_name_div); database_div.appendChild(database_info_div);
                     databases_div.appendChild(database_div);
-                    database_div.onclick = () => { openDatabase(database, color) };
+                    database_div.onclick = () => {
+
+                        openDatabase(database, color);
+                    };
 
                     database_div.oncontextmenu = (e) => {
                         e.preventDefault();
@@ -236,7 +252,10 @@ export function loadDatabases(config: mysql.ConnectionConfig) {
                     }
                 }
                 index++;
+
+
             });
+
 
         });
 
@@ -247,12 +266,11 @@ export function loadDatabases(config: mysql.ConnectionConfig) {
 
 }
 export function openDatabase(database: string, color: string): void {
-
-
+    pushUsedDatabase(database);
     var key = database;
     addTab({ key: key, active: true, color: color, title: database, type: "tables", database: database });
     renderTabs();
-    addTablesView(database, key,true);
+    addTablesView(database, key, true);
 
 }
 
@@ -274,10 +292,16 @@ export function renderTabs() {
         open_tabs.forEach((tab) => {
             var tab_div = document.createElement("div");
             tab_div.setAttribute("data-key", tab.key);
+            // if(tab.loadding)
+            //     tab_div.setAttribute("data-loadding","true");
             var tab_context_div = document.createElement("div");
 
             tab_context_div.className = "tab-context";
             tab_context_div.title = tab.title;
+
+            // var tab_loadding=document.createElement("div");
+            // tab_loadding.className="tab-loadding";
+            // tab_div.appendChild(tab_loadding)
 
             var close = document.createElement("span");
             close.className = "tab-close";
@@ -325,6 +349,10 @@ export function renderTab(tab: ITab) {
         var tabKey = tab_div.getAttribute("data-key");
         if (tabKey == tab.key) {
             var tabtitle = tab_div.getElementsByClassName("tab-title").item(0);
+            // if(tab.loadding)
+            //     tab_div.setAttribute("data-loadding","true");
+            // else
+            //      tab_div.setAttribute("data-loadding","false");
 
             tabtitle.textContent = tab.title;
             themeColor(tab.color);
@@ -362,7 +390,6 @@ export function activeTab(tab: ITab) {
             tab_active_width = 400;
         }
 
-
         for (var index = 0; index < tabs.length; index++) {
             var tabT: any = tabs[index];
             var tabTkey = tabT.getAttribute("data-key");
@@ -379,6 +406,7 @@ export function activeTab(tab: ITab) {
                     if (tabO.active) {
                         tabT.className = "tab tab-active";
                         tabT.children.item(0).style.width = tab_active_width + "px";
+
                         themeColor(tabO.color);
                         setTimeout(() => {
                             activeView(tab.key);
@@ -433,16 +461,16 @@ export function layout() {
     var sidebarWidth = 200;
     if (sidebarVisiable) {
         sidebarWidth = 200;
-        titlebarStart.style.paddingLeft="0px";
-        titlebarEnd.style.paddingRight="0px";
+        titlebarStart.style.paddingLeft = "0px";
+        titlebarEnd.style.paddingRight = "0px";
     } else {
         sidebarWidth = 0;
         if (isMac) {
-            titlebarStart.style.paddingLeft="60px";
-            titlebarEnd.style.paddingRight="0px";
+            titlebarStart.style.paddingLeft = "60px";
+            titlebarEnd.style.paddingRight = "0px";
         } else {
-            titlebarStart.style.paddingLeft="0px";
-            titlebarEnd.style.paddingRight="60px";
+            titlebarStart.style.paddingLeft = "0px";
+            titlebarEnd.style.paddingRight = "60px";
         }
 
     }
@@ -454,7 +482,7 @@ export function layout() {
 
 }
 
-export function addTablesView(database: string, key: string,isGrid?:boolean) {
+export function addTablesView(database: string, key: string, isGrid?: boolean) {
 
     var views_div = checkView(key);
 
@@ -466,7 +494,7 @@ export function addTablesView(database: string, key: string,isGrid?:boolean) {
 
     views_div.appendChild(view_div);
 
-    if(isGrid){
+    if (isGrid) {
         var grids_div = document.createElement("table");
         grids_div.className = "view_grids";
         view_div.appendChild(grids_div);
@@ -474,63 +502,84 @@ export function addTablesView(database: string, key: string,isGrid?:boolean) {
         getTabels(database, (error, result, fields) => {
             //分组
             statusInfo(result.length);
-            var groupData:Map<string,any>=new Map();
+            var groupData: Map<string, any> = new Map();
             result.forEach((row: any, index: number) => {
-                var table:string= row.table;
-                var key=table;
-                if(table.indexOf("_")>0){
-                    key=table.split("_")[0];
+                var table: string = row.table;
+                var key = table;
+                if (table.indexOf("_") > 0) {
+                    key = table.split("_")[0];
                 }
-                var data=groupData.get(key);
-                if(data==undefined){
-                    data=[];
-                    groupData.set(key,data);
+                var data = groupData.get(key);
+                if (data == undefined) {
+                    data = [];
+                    groupData.set(key, data);
                 }
                 data.push(row);
 
+            });
+            //排序
+            var groupSort: Array<string> = [];
+            var groupSortMap: Map<string, number> = new Map();
+            groupData.forEach((data, key) => {
+                var groupUsed: number = 0;
+                var groupTable: string;
+                data.forEach((row: any, index: number) => {
+                    var tableName = row.table;
+                    var tableUsed = pullUsedTable(tableName);
+                    if (groupTable == undefined) {
+                        groupTable = tableName;
+                        groupUsed = tableUsed;
+                    } else if (tableUsed > groupUsed) {
+                        groupTable = tableName;
+                        groupUsed = tableUsed;
+                    }
+
+                });
+                groupSort.push(key);
+                groupSortMap.set(key, groupUsed);
 
             });
-            //绘制
-            groupData.forEach((data,key)=>{
+            groupSort.sort((a, b) => (groupSortMap.get(b) - groupSortMap.get(a)));
+            groupSort.forEach((key) => {
+                var data = groupData.get(key);
+                var groupColor = Theme.randomColor();
 
-                var groupColor=Theme.randomColor();
+                var grid_div = document.createElement("div");
+                grid_div.className = "grid_group";
 
-                var grid_div=document.createElement("div");
-                grid_div.className="grid_group";
-     
-                grid_div.style.backgroundColor=Theme.background;
-                grid_div.style.borderBottom="1px solid "+groupColor;
+                grid_div.style.backgroundColor = Theme.background;
+                grid_div.style.borderBottom = "1px solid " + groupColor;
                 grids_div.appendChild(grid_div);
 
-                var grid_tile_div=document.createElement("div");
-                grid_tile_div.innerText=key;
-                grid_tile_div.style.backgroundColor=groupColor;
+                var grid_tile_div = document.createElement("div");
+                grid_tile_div.innerText = key;
+                grid_tile_div.style.backgroundColor = groupColor;
                 grid_div.appendChild(grid_tile_div);
 
-                var group_div=document.createElement("div");
-            
+                var group_div = document.createElement("div");
+
 
                 grids_div.appendChild(group_div);
 
+                data.sort((a:any,b:any)=>(pullUsedTable(b.table)-pullUsedTable(a.table)));
 
-                
                 data.forEach((row: any, index: number) => {
-                    var grid_div=document.createElement("div");
-                    grid_div.className="grid";
+                    var grid_div = document.createElement("div");
+                    grid_div.className = "grid";
                     var table = row.table;
-                    var grid_title=document.createElement("div");
-                    grid_title.className="grid_title";
-                    grid_title.innerText=table;
-                    var grid_info=document.createElement("div");
-                    grid_info.className="grid_info";
-                    grid_info.innerText=row.comment;
+                    var grid_title = document.createElement("div");
+                    grid_title.className = "grid_title";
+                    grid_title.innerText = table;
+                    var grid_info = document.createElement("div");
+                    grid_info.className = "grid_info";
+                    grid_info.innerText = row.comment;
                     grid_div.appendChild(grid_title);
                     grid_div.appendChild(grid_info);
-    
+
                     group_div.appendChild(grid_div);
-                   
-                    onDrapActionElement(grid_div,row);
-                 
+
+                    onDrapActionElement(grid_div, row);
+
                     grid_div.onclick = () => {
                         selectedObj([table]);
                     };
@@ -541,33 +590,34 @@ export function addTablesView(database: string, key: string,isGrid?:boolean) {
                         e.preventDefault();
                         ipcRenderer.send('show-tables-menu', table);
                     };
-        
-                   
-                });
-            })
 
-           
+
+                });
+            });
+
+
+
         })
 
 
 
 
-    }else{
+    } else {
 
         var table_div = document.createElement("table");
         table_div.className = "view_table_list";
         view_div.appendChild(table_div);
         createTheadElement(table_div, ["Table", "Rows", "Size", "Index_size", "Comment"]);
-       
+
         var tbody_div = document.createElement("tbody");
         table_div.appendChild(tbody_div);
-    
+
         getTabels(database, (error, result, fields) => {
-    
+            result.sort((a:any,b:any)=>(pullUsedTable(b.table)-pullUsedTable(a.table)));
             result.forEach((row: any, index: number) => {
-    
+
                 var table = row.table;
-                var tr = createTrElement(row, index+1);
+                var tr = createTrElement(row, index + 1);
                 tr.onclick = () => {
                     selectedObj([table]);
                 };
@@ -578,11 +628,11 @@ export function addTablesView(database: string, key: string,isGrid?:boolean) {
                     e.preventDefault();
                     ipcRenderer.send('show-tables-menu', table);
                 };
-    
+
                 tbody_div.appendChild(tr);
             });
         })
-    
+
     }
 
 
@@ -591,7 +641,7 @@ export function addTablesView(database: string, key: string,isGrid?:boolean) {
 }
 export function openColumns(database: string, table: string): void {
 
-
+    pushUsedTable(table);
     var key = database + "." + table;
     addTab({ key: key, title: table, active: true, color: Theme.randomColor(), type: "columns", database: database, table: table });
     renderTabs();
@@ -609,8 +659,8 @@ export function addTableInfoView(database: string, table: string, key: string) {
     var table_div = document.createElement("table");
     table_div.className = "view_table_list";
     view_div.appendChild(table_div);
-    createTheadElement(table_div,["Column_Name", "Column_Type", "Column_Default", "Character_Maximum_Length", "Column_Key", "Column_Comment"]);
-  
+    createTheadElement(table_div, ["Column_Name", "Column_Type", "Column_Default", "Character_Maximum_Length", "Column_Key", "Column_Comment"]);
+
     var tbody_div = document.createElement("tbody");
     table_div.appendChild(tbody_div);
 
@@ -619,10 +669,11 @@ export function addTableInfoView(database: string, table: string, key: string) {
         result.forEach((row: any, index: number) => {
 
             var column = row.COLUMN_NAME;
-            var type=row.COLUMN_TYPE;
-            var tr = createTrElement(row, index+1);
+            var type = row.COLUMN_TYPE;
+            var tr = createTrElement(row, index + 1);
             tr.onclick = () => {
-                selectedObj([column,type]);
+              //  pushUsedColumn(column);
+                selectedObj([column, type]);
             }
 
             tbody_div.appendChild(tr);
@@ -633,46 +684,100 @@ export function addTableInfoView(database: string, table: string, key: string) {
     activeView(key);
 
 }
-export function createTheadElement(table_div:HTMLElement,columns:Array<string>){
-    var color=Theme.randomColor();
+export function createTheadElement(table_div: HTMLElement, columns: Array<string>) {
+    var color = Theme.randomColor();
     var thead_div = document.createElement("thead");
     table_div.appendChild(thead_div);
     var th = document.createElement("th");
     th.innerText = "";
     th.className = "th-tow";
-  
-    th.style.backgroundColor=Theme.background;
+
+    th.style.backgroundColor = Theme.background;
     thead_div.appendChild(th);
     columns.forEach(item => {
-        var color=Theme.randomColor();
+        var color = Theme.randomColor();
         var th = document.createElement("th");
         th.innerText = item;
-        th.style.color=color;
-        th.style.borderBottom="1px solid "+color;
-        th.style.backgroundColor=Theme.background;
+        th.style.color = color;
+        th.style.borderBottom = "1px solid " + color;
+        th.style.backgroundColor = Theme.background;
         thead_div.appendChild(th);
     })
 }
-export function createTrElement(data: any, index: number): HTMLElement {
+export function createTrElement(data: any, index: number, editable?: boolean): HTMLElement {
     var tr = document.createElement("tr");
 
-    var color=Theme.randomColor();
+    var color = Theme.randomColor();
     var td = document.createElement("td");
     td.innerText = index + "";
     td.className = "td-tow";
-    td.style.borderRight="1px solid "+color;
-    td.style.color=color;
-    td.style.backgroundColor=Theme.background;
+    td.style.borderRight = "1px solid " + color;
+    td.style.color = color;
+    td.style.backgroundColor = Theme.background;
+
     tr.appendChild(td);
 
     for (var key in data) {
         var item = data[key];
         var td = document.createElement("td");
+        td.setAttribute("data-key", key);
         td.innerText = item;
+        if (editable) {
+            td.ondblclick = (event) => {
+                var td_div: any = event.target;
+                var edit_input = document.createElement("input");
+                edit_input.value = td_div.innerText;
+                td_div.innerHTML = "";
+                var rd_key = td_div.getAttribute("data-key");
+                td_div.appendChild(edit_input);
+                edit_input.focus();
+                edit_input.onblur = () => {
+                    td_div.innerHTML = edit_input.value;
+
+                    var where: string = "";
+                    var values: string = "";
+                    for (var key in data) {
+                        var item = data[key];
+
+                        if (item == null) {
+                            where += " " + key + " is null and";
+                        } else {
+                            where += " " + key + "='" + item + "' and";
+                        }
+                        if (key == rd_key) {
+                            values += " " + key + "='" + edit_input.value + "' ,";
+                        } else {
+                            if (item != null) {
+
+                                values += " " + key + "='" + item + "' ,";
+                            }
+
+                        }
+
+                    }
+                    if (where.endsWith("and")) {
+                        where = where.substring(0, where.length - 4);
+                    }
+                    if (values.endsWith(",")) {
+                        values = values.substring(0, values.length - 1);
+                    }
+                    data[rd_key] = edit_input.value;
+                    var tab = getActiveTab();
+                    var editSQl = "update " + tab.table + "  set " + values + " where  " + where;
+                    exec(tab.key, tab.database, editSQl, (error, result, fuelds) => {
+                        if (error) {
+                            openMessage(error.message, error.stack, "darkred");
+                        }
+                    })
+
+
+                };
+            }
+        }
 
         tr.appendChild(td);
     }
-    onDrapActionElement(tr,data);
+    onDrapActionElement(tr, data);
 
     return tr;
 }
@@ -745,6 +850,10 @@ export function getActiveView(tab: ITab): Element {
     return undefined;
 }
 export var editor_count: number = 0;
+export function getTabCount(): number {
+    editor_count++;
+    return editor_count;
+}
 export function newEditor(key: string, title: string, sql: string[]) {
     if (open_tabs != undefined && open_tabs.length > 0) {
         var tab_active: ITab = null;
@@ -784,16 +893,18 @@ export function addEditorView(database: string, table: string, sql: string[], ke
     });
     view_div.setAttribute("data-sql", sqlAttr);
     view_div.className = "view";
-    view_div.style.overflow="hidden";
-  
+    view_div.style.overflow = "hidden";
+
     views_div.appendChild(view_div);
     //loadedit
     var editor = document.createElement("div");
     editor.className = "editor_container";
     editor.id = key;
-    editor.style.width =(views_div.clientWidth)+"px";
+    editor.style.width = (views_div.clientWidth) + "px";
     editor.style.height = (views_div.clientHeight) + "px";
     view_div.appendChild(editor);
+    pushEditorAction({action:"new_editor",key:key,sql:sql});
+    loadSuggestions(database);
     // createEdior(editor);
 
     activeView(key);
@@ -806,9 +917,9 @@ export function openViewData(): void {
         if (tab_active.type == "columns") {
             var sql = "select * from " + tab_active.table + " limit 0,100";
             var key = "View Data:" + tab_active.database + "." + tab_active.table;
-            addTab({ key: key, active: true, color: Theme.randomColor(), title: key, type: "result" });
+            addTab({ key: key, active: true, color: Theme.randomColor(), title: key, type: "result", database: tab_active.database, table: tab_active.table });
             renderTabs();
-            addResultView(key, sql, tab_active.database);
+            addResultView(key, sql, tab_active.database, true);
         }
     }
 
@@ -823,22 +934,45 @@ export function getTitle(longTitle: string) {
     }
     return title;
 }
-export function openSqlResult(sql: string): void {
+export function openLoaddingView(key: string, title: string, database?: string, table?: string): HTMLElement {
     var statusbar_database = document.getElementById("statusbar-database");
-    var database: string = basebase_active + "";
+    if (database == undefined)
+        database = basebase_active + "";
+    editor_count++;
+    var title = title;
+    addTab({ key: key, active: true, color: Theme.randomColor(), title: title, type: "loadding", database: database, table: table, loadding: true });
+    renderTabs();
+    var views_div = checkView(key);
+    var view_div = document.createElement("div");
+    view_div.setAttribute("data-key", key);
+    view_div.className = "view";
+    views_div.appendChild(view_div);
+
+    activeView(key);
+    return view_div;
+
+
+}
+export function openSqlResult(sql: string, database?: string, table?: string, result?: any, fields?: any): void {
+    var statusbar_database = document.getElementById("statusbar-database");
+    if (database == undefined)
+        database = basebase_active + "";
 
     var key = "SQL.RESULT-" + (editor_count + 1);
     editor_count++;
     var title = getTitle(sql);
-    addTab({ key: key, active: true, color: Theme.randomColor(), title: sql, type: "result" });
+    addTab({ key: key, active: true, color: Theme.randomColor(), title: sql, type: "result", database: database, table: table });
     renderTabs();
     setTimeout(() => {
-        addResultView(key, sql, database);
+        addResultView(key, sql, database, false, result, fields);
     }, 10);
 
 
 }
-export function addResultView(key: string, sql: string, database: string) {
+
+
+
+export function addResultView(key: string, sql: string, database: string, editable?: boolean, result?: any, fields?: any) {
 
     var views_div = checkView(key);
 
@@ -865,65 +999,27 @@ export function addResultView(key: string, sql: string, database: string) {
 
     var th = document.createElement("th");
     th.innerText = "";
-    th.style.backgroundColor=Theme.background;
+    th.style.backgroundColor = Theme.background;
     th.className = "th-tow";
     thead_div.appendChild(th);
     console.log("key", key);
-    //loadedit
-    exec(key, database, sql, (error, result, fields, callBackKey) => {
-
-        if (error) {
-
-            var tab_active: ITab;
-            console.log("key", callBackKey);
-            open_tabs.forEach((tab => {
-                console.log(tab.key, callBackKey);
-                if (tab.key == callBackKey) {
-                    tab_active = tab;
-                }
-
-            }));
-            console.log("tab_active", tab_active);
-            if (tab_active != undefined && tab_active != null) {
-                tab_active.color = "darkred";
-                tab_active.title = "Exec Error:" + getTitle(sql);
-                renderTab(tab_active);
-
-            }
-         
-
-            var title_div = document.createElement("h1");
-            title_div.innerHTML = error.message;
-            title_div.style.paddingLeft="20px";
-            view_div.appendChild(title_div);
-            var message = error.stack;
-            message = message.replace(/at /g, "<br/>at ");
-            message = message.replace(/--------------------/g, "<br/>--------------------");
-            message = message.replace(/\(/g, "(<highlight>");
-            message = message.replace(/\)/g, "</highlight>)");
-            var message_div = document.createElement("p");
-            message_div.style.paddingLeft="20px";
-            message_div.innerHTML = message;
-            message_div.className = "message";
-            view_div.appendChild(message_div);
-
-            return;
-        }
+    if (result && fields) {
         if (fields != undefined)
             fields.forEach((row: any) => {
-                var color=Theme.randomColor();
+                var color = Theme.randomColor();
                 var th = document.createElement("th");
                 th.innerText = row.name;
-                th.style.color=color;
-                th.style.borderBottom="1px solid "+color;
-                th.style.backgroundColor=Theme.background;
+                th.style.color = color;
+                th.style.borderBottom = "1px solid " + color;
+                th.style.backgroundColor = Theme.background;
                 thead_div.appendChild(th);
             });
+        console.log(result, fields);
         if (result instanceof Array) {
-            statusInfo(result.length+"");
+            statusInfo(result.length + "");
             result.forEach((row: any, index: number) => {
                 var table = row.table;
-                var tr = createTrElement(row, index + 1);
+                var tr = createTrElement(row, index + 1, editable);
                 tr.onclick = () => {
                     var where: string = "";
                     for (var key in row) {
@@ -939,30 +1035,257 @@ export function addResultView(key: string, sql: string, database: string) {
                 tbody_div.appendChild(tr);
             });
 
-        } else {
-            var success_div = document.createElement("success");
-            success_div.className = "success";
-            for (var key in result) {
-                var item = result[key];
-                if (item instanceof Function) {
-
-                } else {
-                    success_div.innerHTML += key + ":" + item + "<br/>";
-                }
-
-
-            }
-
-            view_div.appendChild(success_div);
         }
 
 
+    } else
+        //loadedit
+        exec(key, database, sql, (error, result, fields, callBackKey) => {
+
+            if (error) {
+
+                var tab_active: ITab;
+                console.log("key", callBackKey);
+                open_tabs.forEach((tab => {
+                    console.log(tab.key, callBackKey);
+                    if (tab.key == callBackKey) {
+                        tab_active = tab;
+                    }
+
+                }));
+                console.log("tab_active", tab_active);
+                if (tab_active != undefined && tab_active != null) {
+                    tab_active.color = "darkred";
+                    tab_active.title = "Exec Error:" + getTitle(sql);
+                    renderTab(tab_active);
+
+                }
+
+
+                var title_div = document.createElement("h1");
+                title_div.innerHTML = error.message;
+                title_div.style.paddingLeft = "20px";
+                view_div.appendChild(title_div);
+                var message = error.stack;
+                message = message.replace(/at /g, "<br/>at ");
+                message = message.replace(/--------------------/g, "<br/>--------------------");
+                message = message.replace(/\(/g, "(<highlight>");
+                message = message.replace(/\)/g, "</highlight>)");
+                var message_div = document.createElement("p");
+                message_div.style.paddingLeft = "20px";
+                message_div.innerHTML = message;
+                message_div.className = "message";
+                view_div.appendChild(message_div);
+
+                return;
+            }
+            if (fields != undefined)
+                fields.forEach((row: any) => {
+                    var color = Theme.randomColor();
+                    var th = document.createElement("th");
+                    th.innerText = row.name;
+                    th.style.color = color;
+                    th.style.borderBottom = "1px solid " + color;
+                    th.style.backgroundColor = Theme.background;
+                    thead_div.appendChild(th);
+                });
+            console.log(result, fields);
+            if (result instanceof Array) {
+                statusInfo(result.length + "");
+                result.forEach((row: any, index: number) => {
+                    var table = row.table;
+                    var tr = createTrElement(row, index + 1, editable);
+                    tr.onclick = () => {
+                        var where: string = "";
+                        for (var key in row) {
+                            var item = row[key];
+                            where += " key='" + item + "' and";
+                        }
+                        if (where.endsWith("and")) {
+                            where = where.substring(0, where.length - 4);
+                        }
+                        selectedObj([where]);
+                    }
+
+                    tbody_div.appendChild(tr);
+                });
+
+            } else {
+                var success_div = document.createElement("success");
+                success_div.className = "success";
+                for (var key in result) {
+                    var item = result[key];
+                    if (item instanceof Function) {
+
+                    } else {
+                        success_div.innerHTML += key + ":" + item + "<br/>";
+                    }
+
+
+                }
+
+                view_div.appendChild(success_div);
+            }
 
 
 
-    })
+
+
+        })
 
     //
     activeView(key);
+
+}
+
+var usedData: any;
+export function pushUsedDatabase(database: string): void {
+    var count = usedData.databases[database];
+    if (count == undefined) {
+        usedData.databases[database] = 1;
+    } else {
+        usedData.databases[database] = count + 1;
+    }
+    saveUsed();
+}
+export function pushUsedTable(table: string): void {
+    var count = usedData.tables[table];
+    if (count == undefined) {
+        usedData.tables[table] = 1;
+    } else {
+        usedData.tables[table] = count + 1;
+    }
+    saveUsed();
+}
+export function pushUsedColumn(column: string): void {
+    var count = usedData.columns[column];
+    if (count == undefined) {
+        usedData.columns[column] = 1;
+    } else {
+        usedData.columns[column] = count + 1;
+    }
+    saveUsed();
+}
+export function pullUsedDatabase(database: string): number {
+    var count = usedData.databases[database];
+    if (count == undefined) {
+        return 0;
+    } else {
+        return count;
+    }
+}
+export function pullUsedTable(table: string): number {
+    var count = usedData.tables[table];
+    if (count == undefined) {
+        return 0;
+    } else {
+        return count;
+    }
+}
+export function pullUsedColumn(column: string): number {
+    var count = usedData.columns[column];
+    if (count == undefined) {
+        return 0;
+    } else {
+        return count;
+    }
+}
+export function loadUsed() {
+
+    ipcRenderer.send("used");
+    ipcRenderer.on("_used", (event, usedData0) => {
+        usedData = usedData0;
+    });
+}
+export function saveUsed() {
+
+    if (usedData != undefined) {
+        ipcRenderer.send("save_used", usedData);
+    }
+}
+
+export function loadSuggestions(database:string) {
+    setTimeout(() => {
+        var suggestions:Array<any>=[];
+     
+     
+        getColumnSuggestions((error, result, fields) => {
+            if (error) {
+              
+                return;
+            }
+      
+            result.forEach((row: any) => {
+                //TABLE_NAME,COLUMN_NAME, COLUMN_COMMENT       
+              //  row.database+"[t]"+row.TABLE_NAME + "[t]" + row.COLUMN_NAME + "[t]" + row.COLUMN_COMMENT + "[n]";
+                //Method = 0,Function = 1,Constructor = 2,Field = 3,Variable = 4,Class = 5,Struct = 6,Interface = 7,Module = 8,Property = 9,Event = 10,Operator = 11,Unit = 12,Value = 13,Constant = 14,Enum = 15,EnumMember = 16,Keyword = 17,Text = 18,Color = 19,File = 20,Reference = 21,Customcolor = 22,Folder = 23,TypeParameter = 24,User = 25,Issue = 26,Snippet = 27
+                if(database==row.database)
+                   {
+                 
+                    suggestions.push({
+                        label: row.TABLE_NAME+"."+row.COLUMN_NAME ,
+                        kind: 3,
+                        insertText:row.TABLE_NAME+"."+row.COLUMN_NAME ,
+                        detail:row.COLUMN_COMMENT,            
+                        insertTextRules:4,
+                 
+                    });
+                   }
+            });
+       
+
+            getTabelsSuggestions((error1, result1, fields1) => {
+                if (error1) {
+                 
+                    return;
+                };
+                var tableSort:Array<string>=[];
+                result1.forEach((row: any) => {
+                    if(database==row.database)
+                    {
+                        tableSort.push( row.table);
+                    }
+                
+                });
+                tableSort.sort((a,b)=>(pullUsedTable(b)-pullUsedTable(a)));
+    
+                result1.forEach((row: any) => {
+                  
+                    //row.database + "[t]" + row.table + "[t]" + row.comment + " " + "[n]";
+                if(database==row.database)
+                  {
+                       var index=tableSort.indexOf(row.table);
+
+                       var sort=getSortTextByNumber(index);
+                       suggestions.push({
+                        label: row.table  ,
+                        kind: 5,
+                        insertText:row.table  ,
+                        detail:row.comment,            
+                        insertTextRules:4,
+                        sortText:sort
+                     
+                    });
+                }
+                
+                });
+                pushEditorAction({action:"suggestions",suggestions:suggestions});
+             
+            })
+        })
+    }, 10);
+}
+
+export function getSortTextByNumber(sort:number):string{
+    if(sort<26){
+  
+        return String.fromCharCode(sort);
+    }else{
+        return "";
+    }
+    
+
+
+
 
 }
