@@ -7,10 +7,11 @@ import { da_autodelete } from "./da_autodelete";
 import { da_editresult } from "./da_editresult";
 import { da_modifycomment } from "./da_modifycomment";
 import { da_truncate } from "./da_truncate";
+import { da_viewdata } from "./da_viewdata";
 import { IDrapActon } from "./IDrapActon";
 
 const darpActions: IDrapActon[] =
-  [da_autodelete,da_modifycomment,da_truncate,da_editresult];
+  [da_autodelete,da_modifycomment,da_truncate,da_editresult,da_viewdata];
 
 export function onDrapActionElement(ele: HTMLElement, data: any) {
   var command_layer = document.getElementById("darp_layer");

@@ -904,12 +904,17 @@ export function addEditorView(database: string, table: string, sql: string[], ke
     editor.style.height = (views_div.clientHeight) + "px";
     view_div.appendChild(editor);
     pushEditorAction({action:"new_editor",key:key,sql:sql});
-    loadSuggestions(database);
+    if(loadedSugg.indexOf(database)<0){
+        loadSuggestions(database);
+        loadedSugg.push(database);
+    }
+   
     // createEdior(editor);
 
     activeView(key);
 
 }
+var loadedSugg:Array<string>=[];
 
 export function openViewData(): void {
     var tab_active = getActiveTab();

@@ -20,15 +20,16 @@ export const Theme = {
         Theme.background="#fff";
         Theme.color="#444";
         Theme.hover="rgba(175,175,175,0.2)";
-        Theme.bar="#f3f3f3";
+        Theme.bar="rgba(255,255,255,0.8)";
 
 
 
     },
     action():void{
-        document.body.style.backgroundColor = Theme.background;
+      //  document.body.style.backgroundColor = Theme.background;
         document.body.style.color =Theme.color;
-        document.getElementById("sidebar").style.backgroundColor = Theme.bar;
+     //   document.getElementById("sidebar").style.backgroundColor = Theme.bar;
+        document.getElementById("main").style.backgroundColor = Theme.background;
     },
     load() :void{
         /*判断是否支持主题色*/

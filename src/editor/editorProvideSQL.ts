@@ -16,6 +16,8 @@ var load = ()=> {
             "select version();",
             "insert into () values();",
             "desc",
+            "comment ''",
+            "limit 0,10",
             "DISTINCT()",
             "CONCAT(,)",
             "ifnull(,)",
@@ -43,7 +45,17 @@ var load = ()=> {
             "year()",
             "month()",
             "str_to_data(,)",
-            "data_format(,)"
+            "data_format(,)",
+            "varchar(64)",
+            "double()",
+            "int()",
+            "alter table ",
+            "PRIMARY KEY()",
+            "not null",
+            "like",
+            "column",
+            "table",
+
 
 
         ];

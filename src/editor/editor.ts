@@ -1,3 +1,5 @@
+import { KeyCode, KeyMod } from "monaco-editor";
+
 function newEditor(ele:any,sql:any){
     var fun = function () {
         setTimeout(() => {
@@ -11,12 +13,12 @@ function newEditor(ele:any,sql:any){
             const myAction = {
                 id: "formatsql",
                 label: "Format SQL",
-                // keybindings: [
+                 keybindings: [
                 // // eslint-disable-next-line no-bitwise
                 // KeyMod.CtrlCmd | KeyCode.Enter, // Ctrl + Enter or Cmd + Enter
                 // // eslint-disable-next-line no-bitwise
-                // KeyMod.CtrlCmd | KeyCode.KEY_R, // Ctrl + R or Cmd + R
-                // ],
+                2048|1024|42, // Ctrl + R or Cmd + R
+                 ],
                 run: () => {
                     console.log("sadasda");
                     editor.setValue(eval("vkbeautify").sql(editor.getValue()));

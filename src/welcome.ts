@@ -255,12 +255,19 @@ export default function html(color: string): HTMLElement {
 
 
     var learn = document.createElement("h3");
-    learn.innerText = "Learn";
+    learn.innerText = "Quick use";
     right.appendChild(learn);
-    var card = document.createElement("div");
-    card.innerHTML = "<a target='blank' href='https://www.violetime.com/product/vtsql'>Instructions for use!</a>";
-    card.className = "card";
-    right.appendChild(card);
+    var tips:Array<string>=["CommandOrControl+Shift+L -> Beautify SQL",
+            "CommandOrControl+F -> Find",
+            "CommandOrControl+Shift+P -> Editor Command "];
+    tips.forEach(tip=>{
+        var card = document.createElement("div");
+        card.innerHTML = tip;
+        card.style.backgroundColor=Theme.randomColor();
+        card.className = "card";
+        right.appendChild(card);
+    })
+
 
 
     return root;
