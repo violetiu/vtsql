@@ -1,5 +1,3 @@
-import { KeyCode, KeyMod } from "monaco-editor";
-
 function newEditor(ele:any,sql:any){
     var fun = function () {
         setTimeout(() => {

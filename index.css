@@ -6,6 +6,7 @@ body {
     height: 100%;
     font-family: system-ui;
     --status-color: #456;
+    overflow: hidden;
 }
 
 .app {
@@ -15,12 +16,28 @@ body {
 }
 
 .sidebar {
-    width: 200px;
+    padding-top: 50px;
+    width: 100%;
+    display: flex;
     user-select: none;
-    -webkit-app-region: drag;
-    display: none;
     animation: active 0.5s;
     backdrop-filter: blur(20px);
+    -webkit-app-region: drag;
+}
+
+.sidebar_databases {
+    overflow-y: auto;
+    -webkit-app-region: none;
+}
+
+.sidebar_tables {
+    overflow-y: auto;
+    -webkit-app-region: none;
+}
+
+.sidebar_welcome {
+    flex: 1;
+    -webkit-app-region: none;
 }
 
 .main {
@@ -28,8 +45,8 @@ body {
 }
 
 .titlebar {
-    display: flex;
-    height: 50px;
+    display: block;
+    height: 100px;
     width: 100%;
     -webkit-app-region: drag;
     user-select: none;
@@ -87,6 +104,30 @@ space {
 
 .tab-active .tab-close {
     display: block;
+}
+
+.toolbars {
+    display: block;
+    position: relative;
+}
+
+#toolbar_title {
+    line-height: 50px;
+    text-align: center;
+    color: #fff;
+    font-weight: bolder;
+}
+
+#titlebar-start {
+    position: absolute;
+    left: 0;
+    top: 0
+}
+
+#titlebar-end {
+    position: absolute;
+    right: 0;
+    top: 0
 }
 
 .tab-title {
@@ -159,7 +200,12 @@ find {
     opacity: 1;
 }
 
-.database {
+.sidebar_group {
+    padding-top: 12px;
+    font-size: 14px
+}
+
+.sidebar_item {
     cursor: pointer;
     justify-content: center;
     align-items: center;
@@ -171,22 +217,45 @@ find {
     opacity: 0.8;
     display: flex;
     overflow: hidden;
-    animation: ani_width 1s;
+    transition: width 0.3s;
+    animation: ani_width 0.3s;
     animation-timing-function: cubic-bezier(0.6, -0.28, 0.735, 0.045);
     -webkit-app-region: none;
 }
 
-.database-name {
+.sidebar>div[data-model=l] {
+    width: 100%;
+}
+
+.sidebar>div[data-model=l] .sidebar_item_name {
+    width: 100%;
+}
+
+.sidebar>div[data-model=s] {
+    width: 80px;
+}
+
+.sidebar>div[data-model=s] .sidebar_item_name {
+    min-width: 0;
+}
+
+.sidebar>div[data-model=s] .sidebar_item_info {
+    display: none;
+}
+
+.sidebar_item_name {
     flex: 1;
     overflow: hidden;
     font-size: 15px;
     font-weight: bold;
     padding: 0px 2px 0px 10px;
     overflow: hidden;
+    min-width: 100px;
     white-space: nowrap;
+    max-width: 150px;
 }
 
-.database-info {
+.sidebar_item_info {
     display: inline-block;
     font-size: 11px;
     border-radius: 5px;
@@ -195,11 +264,11 @@ find {
     transform: rotate( 10deg);
 }
 
-.database:hover {
+.sidebar_item:hover {
     opacity: 1;
 }
 
-.database-active {
+.sidebar_item_active {
     opacity: 1;
 }
 
@@ -561,9 +630,8 @@ iframe {
 
 .darp_area {
     height: 40px;
-    margin-bottom: 5px;
-    margin-top: 5px;
-    width: inherit;
+    margin: 5px;
+    border-radius: 5px;
     display: flex;
     align-items: center;
     font-size: 15px;
@@ -571,7 +639,8 @@ iframe {
 }
 
 .darp_area[data-over=true] {
-    background-color: rgba(175, 175, 175, 0.2);
+    background-color: var(--status-color);
+    color: #fff;
 }
 
 .darp_area svg {
@@ -587,11 +656,14 @@ iframe {
     padding: 5px;
     margin: 5px;
     vertical-align: top;
-    border-radius: 2px;
+    border-radius: 5px;
+    border: 1px solid transparent;
+    cursor: pointer;
 }
 
 .grid:hover {
     background-color: rgba(175, 175, 175, 0.2);
+    border: 1px solid var(--status-color);
 }
 
 .grid_group {

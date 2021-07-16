@@ -11,7 +11,7 @@ function createWindow() {
     height: 700,
     darkTheme:nativeTheme.shouldUseDarkColors,
     transparent:true,
-    vibrancy:nativeTheme.shouldUseDarkColors?"dark":"light",
+    vibrancy:nativeTheme.shouldUseDarkColors?"ultra-dark":"medium-light",
     // backgroundColor:"#09f",
     webPreferences: {
       preload: path.join(__dirname, "preload.js"),

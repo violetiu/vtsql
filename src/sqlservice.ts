@@ -101,6 +101,7 @@ export function exec(key: string, database: string, sql: string, callback: Query
         conn.query(sql, (error, result, fields) => {
             callback(error, result, fields, key);
         });
+    
     }
 
 

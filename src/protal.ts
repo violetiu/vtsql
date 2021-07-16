@@ -1,4 +1,4 @@
-import { ITab } from "./ITab";
+import { ITab,ITabType } from "./ITab";
 import { exec, getColumnSuggestions, getDatabases, getTabels, getTabelsSuggestions, getTablesColumn, showDatabases } from "./sqlservice";
 import { Theme } from "./theme";
 import welcome from "./welcome";
@@ -10,6 +10,7 @@ import { layoutToolButton } from "./titlebarbuttons/titlebarButtonManager";
 import { onDrapActionElement } from "./drapaction/darpActionManager";
 import { statusInfo } from "./statusbar";
 import { pushEditorAction } from "./preload/editorServer";
+import { SidebarModels } from "./SidebarModels";
 const isMac = process.platform === 'darwin';
 export var basebase_active: string;
 export type noArgCallback = () => void;
@@ -71,11 +72,14 @@ export function openWeb(url: string): void {
 }
 export function openWelcome(): void {
 
-    var color = Theme.randomColor();
-    var key = "Welcome";
-    addTab({ key: key, active: true, color: color, title: key, type: "welcome" });
-    renderTabs();
-    addWecomeView(key, color);
+    var sidebar_welcome = document.getElementById("sidebar_welcome");
+    sidebar_welcome.appendChild(welcome(Theme.randomColor()));
+
+    // var color = Theme.randomColor();
+    // var key = "Welcome";
+    // addTab({ key: key, active: true, color: color, title: key, type: "welcome" });
+    // renderTabs();
+    // addWecomeView(key, color);
 
 }
 
@@ -171,7 +175,7 @@ export function setSidebarVisiable(visiale: boolean) {
 export function loadDatabases(config: mysql.ConnectionConfig) {
 
 
-    var databases_div = document.getElementById("databases");
+    var databases_div = document.getElementById("sidebar_databases");
 
     var load_svg = document.createElement("div");
     load_svg.className = "loadding";
@@ -179,8 +183,8 @@ export function loadDatabases(config: mysql.ConnectionConfig) {
     databases_div.appendChild(load_svg);
     if (!sidebarVisiable) {
         sidebarVisiable = true;
-        var sidebar = document.getElementById("sidebar");
-        sidebar.style.display = "block";
+        // var sidebar = document.getElementById("sidebar");
+        // sidebar.style.display = "block";
 
         layout();
     }
@@ -228,13 +232,13 @@ export function loadDatabases(config: mysql.ConnectionConfig) {
                     && database !== "mysql" && database !== "sys" && database !== "profile") {
                     var color = Theme.colors[index];
                     var database_div = document.createElement("div");
-                    database_div.className = "database";
+                    database_div.className = "sidebar_item";
                     database_div.style.background = color;
                     var database_name_div = document.createElement("div");
-                    database_name_div.className = "database-name";
+                    database_name_div.className = "sidebar_item_name";
                     database_name_div.innerText = database;
                     var database_info_div = document.createElement("div");
-                    database_info_div.className = "database-info";
+                    database_info_div.className = "sidebar_item_info";
 
                     database_info_div.innerHTML = databaseMap.get(database) + "<span style='font-size:6px;'>Mb</span>";
                     database_info_div.style.background = Theme.bar;
@@ -276,10 +280,12 @@ export function openDatabase(database: string, color: string): void {
 
 export function renderTabs() {
     var tabsbar = document.getElementById("tabsbar");
+    var sidebar = document.getElementById("sidebar");
+    var tabsbar_width = window.innerWidth-sidebar.clientWidth;
     tabsbar.innerHTML = "";
 
     if (open_tabs != undefined) {
-        var tabsbar_width = tabsbar.clientWidth;
+   
         var tab_width = (tabsbar_width) / (open_tabs.length + 2) - 25;
         var tab_active_width = tab_width * 3;
         if (tab_width > 200) {
@@ -364,7 +370,12 @@ export function renderTab(tab: ITab) {
 }
 export function themeColor(color: string) {
     var titlebar = document.getElementById("titlebar");
-    titlebar.style.backgroundColor = color;
+    if(Theme.isDark){
+        titlebar.style.backgroundColor = "";
+    }else{
+        titlebar.style.backgroundColor = color;
+    }
+
     // var statusbar = document.getElementById("statusbar");
     // statusbar.style.backgroundColor = color;
 
@@ -375,12 +386,17 @@ export function activeTab(tab: ITab) {
     if (tab.database != undefined) {
         activeBasebase(tab.database);
     }
+   
+
+
     if (open_tabs != undefined) {
         var tabsbar = document.getElementById("tabsbar");
 
         var tabs = tabsbar.children;
-
-        var tabsbar_width = tabsbar.clientWidth;
+        var sidebar = document.getElementById("sidebar");
+        var tabsbar_width = window.innerWidth-sidebar.clientWidth;
+    
+     
         var tab_width = (tabsbar_width) / (tabs.length + 2) - 25;
         var tab_active_width = tab_width * 3;
         if (tab_width > 200) {
@@ -388,7 +404,8 @@ export function activeTab(tab: ITab) {
         }
         if (tab_active_width > 400) {
             tab_active_width = 400;
-        }
+        }   
+      
 
         for (var index = 0; index < tabs.length; index++) {
             var tabT: any = tabs[index];
@@ -423,6 +440,7 @@ export function activeTab(tab: ITab) {
             }
 
         }
+       
     }
 }
 export function addTab(new_tab: ITab) {
@@ -454,38 +472,80 @@ export function activeView(key: string) {
     selectedObj(undefined);
 
 }
+var sidebarModel: SidebarModels = SidebarModels.welcome;
+export function layoutModel(model: SidebarModels) {
+    sidebarModel = model;
+    layout();
+
+}
 export function layout() {
     var titlebarStart = document.getElementById("titlebar-start");
     var titlebarEnd = document.getElementById("titlebar-end");
-
-    var sidebarWidth = 200;
-    if (sidebarVisiable) {
-        sidebarWidth = 200;
-        titlebarStart.style.paddingLeft = "0px";
-        titlebarEnd.style.paddingRight = "0px";
-    } else {
-        sidebarWidth = 0;
-        if (isMac) {
-            titlebarStart.style.paddingLeft = "60px";
-            titlebarEnd.style.paddingRight = "0px";
-        } else {
-            titlebarStart.style.paddingLeft = "0px";
-            titlebarEnd.style.paddingRight = "60px";
-        }
-
-    }
     var views_div = document.getElementById("views");
-    views_div.style.height = (window.innerHeight - 50 - 24) + "px";
-    views_div.style.width = (window.innerWidth - sidebarWidth) + "px";
     var titlebar = document.getElementById("titlebar");
-    titlebar.style.width = (window.innerWidth - sidebarWidth) + "px";
+    var sidebar = document.getElementById("sidebar");
+    var sidebar_databases = document.getElementById("sidebar_databases");
+    var sidebar_tables = document.getElementById("sidebar_tables");
+    var sidebar_welcome = document.getElementById("sidebar_welcome");
+
+    var main = document.getElementById("main");
+
+    if (sidebarModel == SidebarModels.welcome) {
+
+        sidebar.style.width = "100%";
+        sidebar_databases.style.display = "none";
+        sidebar_tables.style.display = "none";
+        sidebar_welcome.style.display = "block";
+        main.style.display = "none";
+    } else if (sidebarModel == SidebarModels.datebases) {
+        // var sidebarWidth = 200;
+
+        //    sidebar.style.width=(sidebarWidth)+"px";
+        sidebar.style.width = "300px";
+        sidebar_databases.style.display = "block";
+     
+        sidebar_databases.setAttribute("data-model","l");
+        sidebar_tables.style.display = "none";
+        sidebar_welcome.style.display = "none";
+
+
+        main.style.display = "block";
+        //  main.style.width=(window.innerWidth-sidebarWidth)+"px";
+        views_div.style.height = (innerHeight - 100 - 24) + "px";
+
+        main.style.width=(window.innerWidth-sidebar.clientWidth)+"px";
+        views_div.style.width=(window.innerWidth-sidebar.clientWidth)+"px";
+        titlebar.style.width=(window.innerWidth-sidebar.clientWidth)+"px";
+
+    } else if (sidebarModel == SidebarModels.tables) {
+        //  var sidebarWidth = 400;
+
+        //sidebar.style.width=(sidebarWidth)+"px";
+        sidebar.style.width = "300px";
+        sidebar_databases.style.display = "block";
+   
+        sidebar_databases.setAttribute("data-model","s");
+        sidebar_tables.style.display = "block";
+        sidebar_welcome.style.display = "none";
+
+  
+        //  main.style.width=(window.innerWidth-sidebarWidth)+"px";
+        views_div.style.height = (innerHeight - 100 - 24) + "px";
+        main.style.display = "block";
+        main.style.width=(window.innerWidth-sidebar.clientWidth)+"px";
+        views_div.style.width=(window.innerWidth-sidebar.clientWidth)+"px";
+        titlebar.style.width=(window.innerWidth-sidebar.clientWidth)+"px";
+    }
+
+
+
 
 }
 
 export function addTablesView(database: string, key: string, isGrid?: boolean) {
 
     var views_div = checkView(key);
-
+    var sidebar_tables = document.getElementById("sidebar_tables");
 
 
     var view_div = document.createElement("div");
@@ -560,8 +620,14 @@ export function addTablesView(database: string, key: string, isGrid?: boolean) {
 
 
                 grids_div.appendChild(group_div);
+                
+                var sidebar_group=document.createElement("div");
+                sidebar_group.className="sidebar_group";
+                sidebar_group.innerText=key;
+                sidebar_tables.appendChild(sidebar_group);
 
-                data.sort((a:any,b:any)=>(pullUsedTable(b.table)-pullUsedTable(a.table)));
+
+                data.sort((a: any, b: any) => (pullUsedTable(b.table) - pullUsedTable(a.table)));
 
                 data.forEach((row: any, index: number) => {
                     var grid_div = document.createElement("div");
@@ -578,7 +644,7 @@ export function addTablesView(database: string, key: string, isGrid?: boolean) {
 
                     group_div.appendChild(grid_div);
 
-                    onDrapActionElement(grid_div, row);
+                    onDrapActionElement(grid_div, row,"tables");
 
                     grid_div.onclick = () => {
                         selectedObj([table]);
@@ -591,7 +657,31 @@ export function addTablesView(database: string, key: string, isGrid?: boolean) {
                         ipcRenderer.send('show-tables-menu', table);
                     };
 
+                    var database_div = document.createElement("div");
+                    database_div.className = "sidebar_item";
+                    database_div.style.background = groupColor;
+                    var database_name_div = document.createElement("div");
+                    database_name_div.className = "sidebar_item_name";
+                    database_name_div.innerText = row.table;
+                    var database_info_div = document.createElement("div");
+                    database_info_div.className = "sidebar_item_info";
 
+                    database_info_div.innerHTML = row.size + "<span style='font-size:6px;'>Mb</span>";
+                    database_info_div.style.background = Theme.bar;
+                    database_info_div.style.color = groupColor;
+                    database_div.appendChild(database_name_div); database_div.appendChild(database_info_div);
+                    sidebar_tables.appendChild(database_div);
+                    database_div.onclick = () => {
+                        openColumns(database, table);
+                    };
+                    database_div.ondblclick = () => {
+                        var sql = "select * from " + table + " limit 0,100";
+                        var key = "View Data:" + database + "." + table;
+                        addTab({ key: key, active: true, color: Theme.randomColor(), title: key, type: "result", database: database, table: table });
+                        renderTabs();
+                        addResultView(key, sql, database, true);
+                    };
+                    onDrapActionElement(database_div, row,"tables");
                 });
             });
 
@@ -600,7 +690,7 @@ export function addTablesView(database: string, key: string, isGrid?: boolean) {
         })
 
 
-
+        layoutModel(SidebarModels.tables);
 
     } else {
 
@@ -613,7 +703,7 @@ export function addTablesView(database: string, key: string, isGrid?: boolean) {
         table_div.appendChild(tbody_div);
 
         getTabels(database, (error, result, fields) => {
-            result.sort((a:any,b:any)=>(pullUsedTable(b.table)-pullUsedTable(a.table)));
+            result.sort((a: any, b: any) => (pullUsedTable(b.table) - pullUsedTable(a.table)));
             result.forEach((row: any, index: number) => {
 
                 var table = row.table;
@@ -672,7 +762,7 @@ export function addTableInfoView(database: string, table: string, key: string) {
             var type = row.COLUMN_TYPE;
             var tr = createTrElement(row, index + 1);
             tr.onclick = () => {
-              //  pushUsedColumn(column);
+                //  pushUsedColumn(column);
                 selectedObj([column, type]);
             }
 
@@ -777,7 +867,7 @@ export function createTrElement(data: any, index: number, editable?: boolean): H
 
         tr.appendChild(td);
     }
-    onDrapActionElement(tr, data);
+    onDrapActionElement(tr, data,"columns");
 
     return tr;
 }
@@ -903,18 +993,18 @@ export function addEditorView(database: string, table: string, sql: string[], ke
     editor.style.width = (views_div.clientWidth) + "px";
     editor.style.height = (views_div.clientHeight) + "px";
     view_div.appendChild(editor);
-    pushEditorAction({action:"new_editor",key:key,sql:sql});
-    if(loadedSugg.indexOf(database)<0){
+    pushEditorAction({ action: "new_editor", key: key, sql: sql });
+    if (loadedSugg.indexOf(database) < 0) {
         loadSuggestions(database);
         loadedSugg.push(database);
     }
-   
+
     // createEdior(editor);
 
     activeView(key);
 
 }
-var loadedSugg:Array<string>=[];
+var loadedSugg: Array<string> = [];
 
 export function openViewData(): void {
     var tab_active = getActiveTab();
@@ -1209,86 +1299,83 @@ export function saveUsed() {
     }
 }
 
-export function loadSuggestions(database:string) {
+export function loadSuggestions(database: string) {
     setTimeout(() => {
-        var suggestions:Array<any>=[];
-     
-     
+        var suggestions: Array<any> = [];
+
+
         getColumnSuggestions((error, result, fields) => {
             if (error) {
-              
+
                 return;
             }
-      
+
             result.forEach((row: any) => {
                 //TABLE_NAME,COLUMN_NAME, COLUMN_COMMENT       
-              //  row.database+"[t]"+row.TABLE_NAME + "[t]" + row.COLUMN_NAME + "[t]" + row.COLUMN_COMMENT + "[n]";
+                //  row.database+"[t]"+row.TABLE_NAME + "[t]" + row.COLUMN_NAME + "[t]" + row.COLUMN_COMMENT + "[n]";
                 //Method = 0,Function = 1,Constructor = 2,Field = 3,Variable = 4,Class = 5,Struct = 6,Interface = 7,Module = 8,Property = 9,Event = 10,Operator = 11,Unit = 12,Value = 13,Constant = 14,Enum = 15,EnumMember = 16,Keyword = 17,Text = 18,Color = 19,File = 20,Reference = 21,Customcolor = 22,Folder = 23,TypeParameter = 24,User = 25,Issue = 26,Snippet = 27
-                if(database==row.database)
-                   {
-                 
+                if (database == row.database) {
+
                     suggestions.push({
-                        label: row.TABLE_NAME+"."+row.COLUMN_NAME ,
+                        label: row.TABLE_NAME + "." + row.COLUMN_NAME,
                         kind: 3,
-                        insertText:row.TABLE_NAME+"."+row.COLUMN_NAME ,
-                        detail:row.COLUMN_COMMENT,            
-                        insertTextRules:4,
-                 
+                        insertText: row.TABLE_NAME + "." + row.COLUMN_NAME,
+                        detail: row.COLUMN_COMMENT,
+                        insertTextRules: 4,
+
                     });
-                   }
+                }
             });
-       
+
 
             getTabelsSuggestions((error1, result1, fields1) => {
                 if (error1) {
-                 
+
                     return;
                 };
-                var tableSort:Array<string>=[];
+                var tableSort: Array<string> = [];
                 result1.forEach((row: any) => {
-                    if(database==row.database)
-                    {
-                        tableSort.push( row.table);
+                    if (database == row.database) {
+                        tableSort.push(row.table);
                     }
-                
-                });
-                tableSort.sort((a,b)=>(pullUsedTable(b)-pullUsedTable(a)));
-    
-                result1.forEach((row: any) => {
-                  
-                    //row.database + "[t]" + row.table + "[t]" + row.comment + " " + "[n]";
-                if(database==row.database)
-                  {
-                       var index=tableSort.indexOf(row.table);
 
-                       var sort=getSortTextByNumber(index);
-                       suggestions.push({
-                        label: row.table  ,
-                        kind: 5,
-                        insertText:row.table  ,
-                        detail:row.comment,            
-                        insertTextRules:4,
-                        sortText:sort
-                     
-                    });
-                }
-                
                 });
-                pushEditorAction({action:"suggestions",suggestions:suggestions});
-             
+                tableSort.sort((a, b) => (pullUsedTable(b) - pullUsedTable(a)));
+
+                result1.forEach((row: any) => {
+
+                    //row.database + "[t]" + row.table + "[t]" + row.comment + " " + "[n]";
+                    if (database == row.database) {
+                        var index = tableSort.indexOf(row.table);
+
+                        var sort = getSortTextByNumber(index);
+                        suggestions.push({
+                            label: row.table,
+                            kind: 5,
+                            insertText: row.table,
+                            detail: row.comment,
+                            insertTextRules: 4,
+                            sortText: sort
+
+                        });
+                    }
+
+                });
+                pushEditorAction({ action: "suggestions", suggestions: suggestions });
+
             })
         })
     }, 10);
 }
 
-export function getSortTextByNumber(sort:number):string{
-    if(sort<26){
-  
+export function getSortTextByNumber(sort: number): string {
+    if (sort < 26) {
+
         return String.fromCharCode(sort);
-    }else{
+    } else {
         return "";
     }
-    
+
 
 
 

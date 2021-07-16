@@ -3,12 +3,14 @@ export const Theme = {
     color:"",
     hover:"",
     bar:"",
+    isDark:false,
 
     randomColor(): string {
         var index = Math.floor(Math.random() * Theme.colors.length);
         return Theme.colors[index];
     },
     themeDark():void {
+        Theme.isDark=true;
         Theme.background="rgb(30,30,30)";
         Theme.color="rgba(255,255,255,0.7)";
         Theme.hover="rgba(175,175,175,0.2)";
@@ -17,6 +19,7 @@ export const Theme = {
      
     },
     themeLight() :void{
+        Theme.isDark=false;
         Theme.background="#fff";
         Theme.color="#444";
         Theme.hover="rgba(175,175,175,0.2)";
@@ -29,7 +32,9 @@ export const Theme = {
       //  document.body.style.backgroundColor = Theme.background;
         document.body.style.color =Theme.color;
      //   document.getElementById("sidebar").style.backgroundColor = Theme.bar;
-        document.getElementById("main").style.backgroundColor = Theme.background;
+        document.getElementById("titlebar").style.backgroundColor = Theme.background;
+        document.getElementById("views").style.backgroundColor = Theme.background;
+       // document.getElementById("statusbar").style.backgroundColor = Theme.background;
     },
     load() :void{
         /*判断是否支持主题色*/

@@ -1,4 +1,5 @@
-import { layout, openWeb, openWelcome, setSidebarVisiable, sidebarVisiable } from "./protal";
+import { layout, layoutModel, openWeb, openWelcome, setSidebarVisiable, sidebarVisiable } from "./protal";
+import { SidebarModels } from "./SidebarModels";
 
 export function statusInfo(info:string){
     var status_info=document.getElementById("statusbar-info");
@@ -8,7 +9,7 @@ export function statusInfo(info:string){
 export function onStatusbar(){
     var statusbar_home=document.getElementById("statusbar-home");
     statusbar_home.addEventListener("click",()=>{
-        openWelcome();
+       layoutModel(SidebarModels.welcome);
 
 
     });
@@ -19,22 +20,22 @@ export function onStatusbar(){
 
 
     });
-    var sidebar_toggle=document.getElementById("sidebar-toggle");
-    sidebar_toggle.addEventListener("click",()=>{
-        var sidebar = document.getElementById("sidebar");
-        if (!sidebarVisiable) {
-            setSidebarVisiable(true);
+    // var sidebar_toggle=document.getElementById("sidebar-toggle");
+    // sidebar_toggle.addEventListener("click",()=>{
+    //     var sidebar = document.getElementById("sidebar");
+    //     if (!sidebarVisiable) {
+    //         setSidebarVisiable(true);
         
-            sidebar.style.display = "block";
+    //         sidebar.style.display = "block";
          
-        }else{
-            setSidebarVisiable(false);
+    //     }else{
+    //         setSidebarVisiable(false);
         
-            sidebar.style.display = "none";
-        }   
-        layout();
+    //         sidebar.style.display = "none";
+    //     }   
+    //     layout();
 
-    });
+    // });
 
     
    

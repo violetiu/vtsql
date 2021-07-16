@@ -1,6 +1,6 @@
 import { ipcRenderer } from "electron";
 import { showInterface } from "../interfacelayer";
-import { ITab } from "../ITab";
+import { ITab, ITabType } from "../ITab";
 import { addTableInfoView, addTablesView, checkView, editor_count, getActiveTab, getActiveView, getSelectedObj, newEditor } from "../protal";
 import { ITitlebarButton } from "../titlebarbuttons/ITitlebarButton";
 import { da_autodelete } from "./da_autodelete";
@@ -13,23 +13,23 @@ import { IDrapActon } from "./IDrapActon";
 const darpActions: IDrapActon[] =
   [da_autodelete,da_modifycomment,da_truncate,da_editresult,da_viewdata];
 
-export function onDrapActionElement(ele: HTMLElement, data: any) {
+export function onDrapActionElement(ele: HTMLElement, data: any,tabType:ITabType) {
   var command_layer = document.getElementById("darp_layer");
   ele.setAttribute("draggable","true");
   var startX:number=0;
   var startY:number;
   ele.ondragstart = (event) => {
     event.dataTransfer.setData("data", JSON.stringify(data));
-    layoutDarpAction(getActiveTab());
+    layoutDarpAction(tabType);
     command_layer.style.display = "block";
-    command_layer.style.left=(event.clientX+50)+"px";
+    command_layer.style.left=(event.clientX+100)+"px";
     startX=event.clientX;
     startY=event.clientY;
-    var y=event.clientY+40;
+    var y=event.clientY-command_layer.clientHeight/2;
 
     if(y>window.innerHeight*2/3){
      
-      command_layer.style.bottom=(window.innerHeight-event.clientY+40)+"px";
+      command_layer.style.bottom=(window.innerHeight-event.clientY+20)+"px";
       command_layer.style.top="";
       command_layer.style.height="auto"
     }else{
@@ -59,6 +59,8 @@ export function onDrapActionElement(ele: HTMLElement, data: any) {
 }
 
 export function loadDarpActions() {
+
+  console.log("loadDarpActions!");
 
   var darpView = document.getElementById("darp-view");
   darpView.innerHTML = "";
@@ -97,12 +99,12 @@ export function loadDarpActions() {
 
 }
 
-export function layoutDarpAction(tab: ITab) {
+export function layoutDarpAction(tabType: ITabType) {
   var darp_areas_div=document.getElementsByClassName("darp_area");
    for(var index=0;index<darp_areas_div.length;index++){
      var tb_div:any=darp_areas_div[index];
      var tabs=tb_div.getAttribute("data-tabs");
-     if(tabs.indexOf(tab.type)>=0){
+     if(tabs.indexOf(tabType)>=0){
     
       
          tb_div.style.display = "flex";

@@ -2,11 +2,12 @@ import { ipcRenderer } from "electron";
 import { ConnectionConfig } from "mysql";
 import { getTime, saveRecent } from "./config";
 
-import { editor_count, loadDatabases, newEditor, openDatabase, openMessage } from "./protal";
+import { editor_count, layoutModel, loadDatabases, newEditor, openDatabase, openMessage } from "./protal";
+import { SidebarModels } from "./SidebarModels";
 import { config, getColumnSuggestions, getDatabases, getTabelsSuggestions, showVersion } from "./sqlservice";
 import { Theme } from "./theme";
 export var recentConfig:any;
-export default function html(color: string): HTMLElement {
+export default function welcome(color: string): HTMLElement {
     var root = document.createElement("div");
     root.className = "welcome";
     var h1 = document.createElement("h1");
@@ -33,7 +34,7 @@ export default function html(color: string): HTMLElement {
 
     var new_div = document.createElement("div");
     new_div.className = "link";
-    new_div.style.color = color;
+
     new_div.innerText = "New Connection";
     new_div.onclick = () => {
         var connect_div = document.getElementById("connect");
@@ -47,36 +48,36 @@ export default function html(color: string): HTMLElement {
     };
     starts_div.appendChild(new_div);
 
-    var open_div = document.createElement("div");
+    // var open_div = document.createElement("div");
 
-    open_div.className = "link";
-    open_div.style.color = color;
-    open_div.innerText = "New Editor";
-    open_div.onclick = () => {
-        var key="Untitled"+"-"+(editor_count+1);
-        newEditor(key,key,[""]);
+    // open_div.className = "link";
+    // open_div.style.color = color;
+    // open_div.innerText = "New Editor";
+    // open_div.onclick = () => {
+    //     var key="Untitled"+"-"+(editor_count+1);
+    //     newEditor(key,key,[""]);
 
-    };
-    starts_div.appendChild(open_div);
-
-
-
-    var new_db_div = document.createElement("div");
-
-    new_db_div.className = "link";
-    new_db_div.style.color = color;
-    new_db_div.innerText = "New Database";
-    new_db_div.onclick = () => {
-        newEditor(
-            "Create Database","Create Database",
-            [
-            "CREATE DATABASE IF NOT EXISTS database_name",
-            "DEFAULT CHARACTER SET utf8 "
-        ]);
+    // };
+    // starts_div.appendChild(open_div);
 
 
-    };
-    starts_div.appendChild(new_db_div);
+
+    // var new_db_div = document.createElement("div");
+
+    // new_db_div.className = "link";
+    // new_db_div.style.color = color;
+    // new_db_div.innerText = "New Database";
+    // new_db_div.onclick = () => {
+    //     newEditor(
+    //         "Create Database","Create Database",
+    //         [
+    //         "CREATE DATABASE IF NOT EXISTS database_name",
+    //         "DEFAULT CHARACTER SET utf8 "
+    //     ]);
+
+
+    // };
+    // starts_div.appendChild(new_db_div);
 
 
     left.appendChild(starts_div);
@@ -98,7 +99,7 @@ export default function html(color: string): HTMLElement {
         recentData.recent.forEach((item: any) => {
             var recent_div = document.createElement("div");
             recent_div.className = "link";
-            recent_div.style.color = color;
+
             recent_div.innerText = item.host;
             recent_div.onclick = () => {
                 var config: ConnectionConfig = {
@@ -118,6 +119,7 @@ export default function html(color: string): HTMLElement {
                        var status_version=document.getElementById("status_version");
                        status_version.innerText=result[0]["version"];
                         setTimeout(() => {
+                            layoutModel(SidebarModels.datebases);
                             loadDatabases(config);                       
                         }, 1);
                     }});

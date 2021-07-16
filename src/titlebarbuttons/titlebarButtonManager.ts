@@ -1,7 +1,8 @@
 import { ipcRenderer } from "electron";
+import { SidebarModels } from "../SidebarModels";
 import { showInterface } from "../interfacelayer";
 import { ITab } from "../ITab";
-import { addTableInfoView, addTablesView, checkView, editor_count, getActiveTab, getActiveView, getSelectedObj, newEditor } from "../protal";
+import { addTableInfoView, addTablesView, checkView, editor_count, getActiveTab, getActiveView, getSelectedObj, layout, layoutModel, newEditor } from "../protal";
 import { ITitlebarButton } from "./ITitlebarButton";
 import { tb_autodelete } from "./tb_autodelete";
 import { tb_autonew } from "./tb_autonew";
@@ -71,6 +72,14 @@ export function loadWindowsTitleButton(){
 }
 
 export function layoutToolButton(tab: ITab) {
+  if(tab.type=="tables"){
+    layoutModel(SidebarModels.datebases);
+}else{
+    layoutModel(SidebarModels.tables);
+}
+  
+  document.getElementById("toolbar_title").innerText=tab.title;
+
    var toolButtons_div=document.getElementsByClassName("titlebar-button");
     for(var index=0;index<toolButtons_div.length;index++){
       var tb_div:any=toolButtons_div[index];
