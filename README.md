@@ -2,7 +2,7 @@
 
 **A MYSQL client based on Electron.**
 
-![name-of-you-image](https://source.violetime.com/images/vssql1.png)
+![name-of-you-image](https://source.violetime.com/images/vtsql1.png)
 ## build
 ### vtsql for mac
  "package": "electron-packager ./  --platform=darwin --out ./build --icon=Icon.icns"
