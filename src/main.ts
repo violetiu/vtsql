@@ -10,8 +10,8 @@ function createWindow() {
   const mainWindow = new BrowserWindow({
     height: 700,
     darkTheme:nativeTheme.shouldUseDarkColors,
-    transparent:true,
-    vibrancy:nativeTheme.shouldUseDarkColors?"ultra-dark":"medium-light",
+    transparent:isMac?true:false,
+    vibrancy:nativeTheme.shouldUseDarkColors?"dark":"medium-light",
     // backgroundColor:"#09f",
     webPreferences: {
       preload: path.join(__dirname, "preload.js"),

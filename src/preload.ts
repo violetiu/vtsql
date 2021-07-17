@@ -36,7 +36,12 @@ window.addEventListener("DOMContentLoaded", () => {
 
   setTimeout(() => {
     openWelcome();
-  }, 500);
+  },100);
+  
+  setTimeout(() => {
+    document.getElementById("views").style.display="block";
+    document.getElementById("statusbar").style.display="flex";
+  },1000);
   setTimeout(() => {
     loadUsed();
   }, 10);
@@ -46,7 +51,6 @@ window.addEventListener("DOMContentLoaded", () => {
   onWeb();
   onOpenSQLFile();
   loadDarpActions();
-
   listenConnect();
 
 });

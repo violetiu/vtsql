@@ -16,7 +16,7 @@ body {
 }
 
 .sidebar {
-    padding-top: 50px;
+    
     width: 100%;
     display: flex;
     user-select: none;
@@ -202,7 +202,8 @@ find {
 
 .sidebar_group {
     padding-top: 12px;
-    font-size: 14px
+    font-size: 14px;
+ 
 }
 
 .sidebar_item {
@@ -274,6 +275,7 @@ find {
 
 .views {
     width: 100%;
+    display: none;
     overflow: hidden;
 }
 
@@ -414,9 +416,10 @@ hr {
 }
 
 .statusbar {
+    display: none;
     width: 100%;
     height: 24px;
-    display: flex;
+  
     background-color: var(--status-color);
     color: #fff;
 }
@@ -702,13 +705,16 @@ iframe {
 }
 
 #window-button {
-    padding-right: 5px;
+    
     display: none;
+    position: fixed;
+    right: 5px;
+    top:0px;
     -webkit-app-region: none;
 }
 
 .window-button {
-    padding: 5px 5px 0px 5px;
+    padding:3px;
     color: #fff;
     opacity: 0.8;
     cursor: pointer;

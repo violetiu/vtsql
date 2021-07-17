@@ -491,16 +491,23 @@ export function layout() {
     var main = document.getElementById("main");
 
     if (sidebarModel == SidebarModels.welcome) {
-
+        sidebar.style.paddingTop="50px";
         sidebar.style.width = "100%";
         sidebar_databases.style.display = "none";
         sidebar_tables.style.display = "none";
         sidebar_welcome.style.display = "block";
         main.style.display = "none";
+      
     } else if (sidebarModel == SidebarModels.datebases) {
         // var sidebarWidth = 200;
 
         //    sidebar.style.width=(sidebarWidth)+"px";
+        if(isMac){
+            sidebar.style.paddingTop="50px";
+        }else{
+            sidebar.style.paddingTop="0px";
+        }
+
         sidebar.style.width = "300px";
         sidebar_databases.style.display = "block";
      
@@ -519,6 +526,11 @@ export function layout() {
 
     } else if (sidebarModel == SidebarModels.tables) {
         //  var sidebarWidth = 400;
+        if(isMac){
+            sidebar.style.paddingTop="50px";
+        }else{
+            sidebar.style.paddingTop="0px";
+        }
 
         //sidebar.style.width=(sidebarWidth)+"px";
         sidebar.style.width = "300px";

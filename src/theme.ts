@@ -1,3 +1,4 @@
+const isMac = process.platform === 'darwin';
 export const Theme = {
     background:"",
     color:"",
@@ -23,15 +24,19 @@ export const Theme = {
         Theme.background="#fff";
         Theme.color="#444";
         Theme.hover="rgba(175,175,175,0.2)";
-        Theme.bar="rgba(255,255,255,0.8)";
+        Theme.bar="rgba(240,240,240,0.8)";
 
 
 
     },
     action():void{
-      //  document.body.style.backgroundColor = Theme.background;
+        if(!isMac){
+            document.body.style.backgroundColor = Theme.background;
+            document.getElementById("sidebar").style.backgroundColor = Theme.bar;
+        }
+    
         document.body.style.color =Theme.color;
-     //   document.getElementById("sidebar").style.backgroundColor = Theme.bar;
+     //  
         document.getElementById("titlebar").style.backgroundColor = Theme.background;
         document.getElementById("views").style.backgroundColor = Theme.background;
        // document.getElementById("statusbar").style.backgroundColor = Theme.background;
